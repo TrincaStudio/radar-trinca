@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { syncGhlContact } from "./ghl.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -33,6 +34,19 @@ app.post("/api/analyze", async (req, res) => {
     res.json({ text: data?.choices?.[0]?.message?.content || "" });
   } catch (error) {
     res.status(502).json({ error: error.message || "Não foi possível processar a análise." });
+  }
+});
+
+app.post("/api/ghl/sync", async (req, res) => {
+  try {
+    if (!process.env.RADAR_SYNC_SECRET || req.get("X-Radar-Key") !== process.env.RADAR_SYNC_SECRET) {
+      return res.status(401).json({ error: "Chave de sincronização inválida." });
+    }
+    const { contactId, company } = req.body || {};
+    const result = await syncGhlContact(contactId, company);
+    res.json(result);
+  } catch (error) {
+    res.status(502).json({ error: error.message || "Não foi possível sincronizar com o GHL." });
   }
 });
 

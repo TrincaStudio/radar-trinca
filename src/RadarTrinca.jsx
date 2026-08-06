@@ -53,6 +53,8 @@ const BLANK_ANALYSIS_FIELDS = {
   analiseProduto: "",
   oportunidadesProduto: "",
   dataAnalise: "",
+  ghlContactId: "",
+  ghlLastSync: "",
 };
 
 // ---------------------------------------------------------------------------
@@ -506,7 +508,31 @@ function CompanyDrawer({ company, onClose, onUpdate }) {
   const [error, setError] = useState("");
   const [tab, setTab] = useState("analise"); // analise | contato
   const [fileName, setFileName] = useState("");
+  const [ghlSync, setGhlSync] = useState({ state: "idle", message: "" });
+  const [syncSecret, setSyncSecret] = useState("");
   const fileInputRef = useRef(null);
+
+  async function syncWithGhl() {
+    if (!company.ghlContactId?.trim()) {
+      setGhlSync({ state: "error", message: "Informe o Contact ID do GoHighLevel." });
+      return;
+    }
+    setGhlSync({ state: "loading", message: "" });
+    try {
+      const response = await fetch("/api/ghl/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Radar-Key": syncSecret },
+        body: JSON.stringify({ contactId: company.ghlContactId.trim(), company }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Falha ao sincronizar com o GHL.");
+      const syncedAt = new Date().toISOString();
+      onUpdate({ ghlLastSync: syncedAt });
+      setGhlSync({ state: "success", message: `${data.updatedFields} campos enviados sem alterar atribuição ou pipeline.` });
+    } catch (syncError) {
+      setGhlSync({ state: "error", message: syncError.message });
+    }
+  }
 
   // Finds `marker`, then extracts the JSON object literal that follows it,
   // respecting nested braces and quoted strings (so braces inside strings don't break it).
@@ -997,6 +1023,24 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
               <Field label="LinkedIn" value={company.linkedin} onChange={(v) => onUpdate({ linkedin: v })} />
               <Field label="E-mail" value={company.email} onChange={(v) => onUpdate({ email: v })} />
               <Field label="Próximo passo" value={company.proximoPasso} onChange={(v) => onUpdate({ proximoPasso: v })} />
+
+              <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 10, padding: 14, margin: "18px 0" }}>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Integração GoHighLevel</div>
+                <div style={{ fontSize: 11.5, color: "#8f8a80", marginBottom: 12 }}>
+                  Atualiza apenas os campos personalizados Radar de um contato existente. Origem, UTMs, tags, responsável, oportunidade e pipeline não são enviados.
+                </div>
+                <Field label="Contact ID do GHL" mono value={company.ghlContactId} onChange={(v) => onUpdate({ ghlContactId: v })} placeholder="Ex.: nmFmQEsNgz6AVpgLVUJ0" />
+                <Field label="Chave de sincronização do Radar" type="password" value={syncSecret} onChange={setSyncSecret} placeholder="Não é salva no navegador" />
+                <button
+                  onClick={syncWithGhl}
+                  disabled={ghlSync.state === "loading" || !company.ghlContactId?.trim() || !syncSecret}
+                  style={{ background: ghlSync.state === "loading" ? "#5a4a8a" : "#8A38F5", color: "white", border: 0, borderRadius: 8, padding: "9px 13px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  {ghlSync.state === "loading" ? "Sincronizando…" : "Enviar inteligência ao GHL"}
+                </button>
+                {ghlSync.message && <div style={{ marginTop: 9, fontSize: 11.5, color: ghlSync.state === "error" ? "#ff6ba0" : "#4ade80" }}>{ghlSync.message}</div>}
+                {company.ghlLastSync && <div style={{ marginTop: 6, fontSize: 10.5, color: "#65605a" }}>Última sincronização: {new Date(company.ghlLastSync).toLocaleString("pt-BR")}</div>}
+              </div>
 
               <div style={{ marginTop: 6, marginBottom: 6 }}>
                 <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 8 }}>Estágio no pipeline comercial</div>
