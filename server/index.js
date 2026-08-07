@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { forwardError, requestScaneia } from "./scaneia.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -33,6 +34,37 @@ app.post("/api/analyze", async (req, res) => {
     res.json({ text: data?.choices?.[0]?.message?.content || "" });
   } catch (error) {
     res.status(502).json({ error: error.message || "Não foi possível processar a análise." });
+  }
+});
+
+app.get("/api/radar/analyses", async (req, res) => {
+  try {
+    const query = new URLSearchParams(req.query).toString();
+    res.json(await requestScaneia(`/api/internal/radar/analyses${query ? `?${query}` : ""}`));
+  } catch (error) {
+    const forwarded = forwardError(error);
+    res.status(forwarded.status).json(forwarded.body);
+  }
+});
+
+app.get("/api/radar/analyses/:id", async (req, res) => {
+  try {
+    res.json(await requestScaneia(`/api/internal/radar/analyses/${encodeURIComponent(req.params.id)}`));
+  } catch (error) {
+    const forwarded = forwardError(error);
+    res.status(forwarded.status).json(forwarded.body);
+  }
+});
+
+app.put("/api/radar/analyses/:id/review", async (req, res) => {
+  try {
+    res.json(await requestScaneia(`/api/internal/radar/analyses/${encodeURIComponent(req.params.id)}/review`, {
+      method: "PUT",
+      body: JSON.stringify(req.body || {}),
+    }));
+  } catch (error) {
+    const forwarded = forwardError(error);
+    res.status(forwarded.status).json(forwarded.body);
   }
 });
 
