@@ -146,6 +146,30 @@ function mapRadarAnalysis(item) {
     reviewedBy: item.reviewedBy || "",
     erroSanitizado: item.erroSanitizado || "",
     statusAnalise: item.status === "COMPLETED" ? "Analisada" : "Não analisada",
+    classificacao: item.classificacao || "A validar",
+    notaGeral: item.notaGeral ?? null,
+    clareza: item.clareza ?? null,
+    ux: item.ux ?? null,
+    copy: item.copy ?? null,
+    conversao: item.conversao ?? null,
+    performance: item.performance ?? null,
+    seo: item.seo ?? null,
+    acessibilidade: item.acessibilidade ?? null,
+    resumoExecutivo: item.resumoExecutivo || "",
+    pontosFortes: item.pontosFortes || "",
+    principaisOportunidades: item.principaisOportunidades || "",
+    impactoNegocio: item.impactoNegocio || "",
+    fitTrinca: item.fitTrinca || "",
+    sugestaoAbordagem: item.sugestaoAbordagem || "",
+    scoreProdutoDesign: item.scoreProdutoDesign ?? null,
+    scoreProdutoTecnologia: item.scoreProdutoTecnologia ?? null,
+    criticalCount: item.criticalCount ?? null,
+    confiancaScaneia: item.confiancaScaneia ?? null,
+    maturidadeProduto: item.maturidadeProduto || "",
+    sinaisProduto: Array.isArray(item.sinaisProduto) ? item.sinaisProduto.join("\n") : (item.sinaisProduto || ""),
+    analiseProduto: item.analiseProduto || "",
+    oportunidadesProduto: item.oportunidadesProduto || "",
+    dataAnalise: item.processedAt ? new Date(item.processedAt).toLocaleDateString("pt-BR") : "",
   };
 }
 
@@ -309,6 +333,17 @@ export default function RadarTrinca() {
       mensagemSugerida: company.mensagemDM,
       proximoPasso: company.proximoPasso,
       alertas: String(company.alertasComerciais || "").split("\n").map((value) => value.trim()).filter(Boolean),
+      classificacao: company.classificacao,
+      resumoExecutivo: company.resumoExecutivo,
+      pontosFortes: company.pontosFortes,
+      principaisOportunidades: company.principaisOportunidades,
+      impactoNegocio: company.impactoNegocio,
+      fitTrinca: company.fitTrinca,
+      sugestaoAbordagem: company.sugestaoAbordagem,
+      maturidadeProduto: company.maturidadeProduto,
+      sinaisProduto: String(company.sinaisProduto || "").split("\n").map((value) => value.trim()).filter(Boolean),
+      analiseProduto: company.analiseProduto,
+      oportunidadesProduto: company.oportunidadesProduto,
       reviewedBy: company.reviewedBy || "Radar Trinca",
     };
     try {
@@ -869,91 +904,31 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
         </div>
 
         <div style={{ padding: "18px 20px 40px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+            <span style={{ color: "#8f8a80", fontSize: 11.5 }}>Revise qualquer uma das três abas antes de concluir.</span>
+            <button
+              onClick={async () => {
+                setError("");
+                setReviewSaving(true);
+                try { await onSaveReview(company); }
+                catch (e) { setError(e.message || "Não foi possível salvar a revisão."); }
+                finally { setReviewSaving(false); }
+              }}
+              disabled={reviewSaving}
+              style={{ background: "#8A38F5", color: "white", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, cursor: reviewSaving ? "default" : "pointer", opacity: reviewSaving ? .65 : 1, whiteSpace: "nowrap" }}
+            >
+              {reviewSaving ? "Salvando…" : company.statusComercial === "Revisada" ? "Salvar revisão" : "Salvar e marcar como revisada"}
+            </button>
+          </div>
+          {error && (
+            <div style={{ display: "flex", gap: 6, alignItems: "flex-start", marginBottom: 14, color: "#ff6ba0", fontSize: 12 }}>
+              <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
+            </div>
+          )}
           {tab === "analise" && (
             <>
-              {/* AI paste box */}
-              <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 10, padding: 14, marginBottom: 20 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <Sparkles size={14} color="#8A38F5" />
-                    <span style={{ fontSize: 12.5, fontWeight: 600 }}>Relatório do Scaneia</span>
-                  </div>
-                  <div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".html,.htm,.txt"
-                      onChange={handleFilePick}
-                      style={{ display: "none" }}
-                    />
-                    <button
-                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        background: "#2c2925",
-                        border: "1px solid #38352f",
-                        color: "#c9c4bb",
-                        borderRadius: 7,
-                        padding: "5px 10px",
-                        fontSize: 11.5,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <Upload size={13} /> Carregar arquivo (.html/.txt)
-                    </button>
-                  </div>
-                </div>
-                {fileName && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#8f8a80", marginBottom: 8 }}>
-                    <FileText size={12} /> {fileName} — texto extraído, revise abaixo antes de processar
-                  </div>
-                )}
-                <textarea
-                  value={reportText}
-                  onChange={(e) => setReportText(e.target.value)}
-                  placeholder="Cole aqui o texto do relatório, ou use 'Carregar arquivo' acima…"
-                  rows={5}
-                  style={{
-                    width: "100%",
-                    background: "#1a1917",
-                    border: "1px solid #38352f",
-                    borderRadius: 8,
-                    padding: 10,
-                    color: "#ece8e1",
-                    fontSize: 13,
-                    resize: "vertical",
-                    outline: "none",
-                  }}
-                />
-                {error && (
-                  <div style={{ display: "flex", gap: 6, alignItems: "flex-start", marginTop: 8, color: "#ff6ba0", fontSize: 12 }}>
-                    <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
-                  </div>
-                )}
-                <button
-                  onClick={processarComIA}
-                  disabled={processing}
-                  style={{
-                    marginTop: 10,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 7,
-                    background: processing ? "#5a4a8a" : "#8A38F5",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 8,
-                    padding: "9px 14px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: processing ? "default" : "pointer",
-                  }}
-                >
-                  {processing ? <Loader2 size={15} className="sweep" /> : <Sparkles size={15} />}
-                  {processing ? "Processando…" : "Processar com IA"}
-                </button>
+              <div style={{ background: "rgba(28,191,255,.08)", border: "1px solid rgba(28,191,255,.22)", borderRadius: 10, padding: 12, marginBottom: 20, color: "#9edfff", fontSize: 12.5 }}>
+                Preenchido automaticamente a partir do relatório Full do Scaneia. Os textos podem ser revisados; os scores permanecem vinculados ao relatório original.
               </div>
 
               {/* Classification override */}
@@ -991,7 +966,7 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
                       max={10}
                       step={0.1}
                       value={company[key] ?? ""}
-                      onChange={(e) => onUpdate({ [key]: e.target.value === "" ? null : Number(e.target.value) })}
+                      readOnly
                       className="mono"
                       style={{
                         width: "100%",
@@ -1039,7 +1014,7 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
                       <input
                         type="number"
                         value={company[key] ?? ""}
-                        onChange={(e) => onUpdate({ [key]: e.target.value === "" ? null : Number(e.target.value) })}
+                        readOnly
                         className="mono"
                         style={{
                           width: "100%",
@@ -1077,19 +1052,6 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
                   <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Status da análise comercial</div>
                   <StatusBadge status={company.statusComercial} />
                 </div>
-                <button
-                  onClick={async () => {
-                    setError("");
-                    setReviewSaving(true);
-                    try { await onSaveReview(company); }
-                    catch (e) { setError(e.message || "Não foi possível salvar a revisão."); }
-                    finally { setReviewSaving(false); }
-                  }}
-                  disabled={reviewSaving}
-                  style={{ background: company.statusComercial === "Revisada" ? "#2c2925" : "#8A38F5", color: "white", border: "1px solid #4a463f", borderRadius: 8, padding: "8px 12px", fontWeight: 600, cursor: "pointer" }}
-                >
-                  {reviewSaving ? "Salvando…" : company.statusComercial === "Revisada" ? "Salvar revisão" : "Salvar e marcar como revisada"}
-                </button>
               </div>
 
               <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 10, padding: 14, marginBottom: 18 }}>
