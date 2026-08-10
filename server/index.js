@@ -3,6 +3,7 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { forwardError, requestScaneia } from "./scaneia.js";
+import { forwardGhlError, listGhlContacts } from "./highlevel.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -43,6 +44,15 @@ app.get("/api/radar/analyses", async (req, res) => {
     res.json(await requestScaneia(`/api/internal/radar/analyses${query ? `?${query}` : ""}`));
   } catch (error) {
     const forwarded = forwardError(error);
+    res.status(forwarded.status).json(forwarded.body);
+  }
+});
+
+app.get("/api/ghl/contacts", async (_req, res) => {
+  try {
+    res.json(await listGhlContacts());
+  } catch (error) {
+    const forwarded = forwardGhlError(error);
     res.status(forwarded.status).json(forwarded.body);
   }
 });
