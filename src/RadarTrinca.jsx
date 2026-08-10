@@ -71,6 +71,10 @@ const BLANK_ANALYSIS_FIELDS = {
   utmSource: "",
   utmMedium: "",
   utmCampaign: "",
+  utmTerm: "",
+  utmContent: "",
+  landingPageUrl: "",
+  referrerUrl: "",
   statusGhl: "Não sincronizado",
 };
 
@@ -146,6 +150,14 @@ function mapRadarAnalysis(item) {
     reviewedBy: item.reviewedBy || "",
     erroSanitizado: item.erroSanitizado || "",
     statusAnalise: item.status === "COMPLETED" ? "Analisada" : "Não analisada",
+    origemLead: item.origemLead || "",
+    utmSource: item.utmSource || "",
+    utmMedium: item.utmMedium || "",
+    utmCampaign: item.utmCampaign || "",
+    utmTerm: item.utmTerm || "",
+    utmContent: item.utmContent || "",
+    landingPageUrl: item.landingPageUrl || "",
+    referrerUrl: item.referrerUrl || "",
     classificacao: item.classificacao || "A validar",
     notaGeral: item.notaGeral ?? null,
     clareza: item.clareza ?? null,
@@ -1065,8 +1077,24 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
               <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 10, padding: 14, marginBottom: 18 }}>
                 <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 10 }}>Contexto do lead · dados de aquisição somente para leitura</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10 }}>
-                  {[["Origem", company.origemLead], ["UTM source", company.utmSource], ["UTM medium", company.utmMedium], ["UTM campaign", company.utmCampaign]].map(([label, value]) => (
-                    <div key={label}><div style={{ fontSize: 10, color: "#65605a" }}>{label}</div><div style={{ fontSize: 12.5, color: value ? "#c9c4bb" : "#65605a", marginTop: 2 }}>{value || "—"}</div></div>
+                  {[
+                    ["Origem", company.origemLead],
+                    ["UTM source", company.utmSource],
+                    ["UTM medium", company.utmMedium],
+                    ["UTM campaign", company.utmCampaign],
+                    ["UTM term", company.utmTerm],
+                    ["UTM content", company.utmContent],
+                    ["Landing page", company.landingPageUrl, true],
+                    ["Referrer", company.referrerUrl, true],
+                  ].map(([label, value, isUrl]) => (
+                    <div key={label} style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 10, color: "#65605a" }}>{label}</div>
+                      {value && isUrl ? (
+                        <a href={value} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 2, color: "#1CBFFF", fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</a>
+                      ) : (
+                        <div style={{ fontSize: 12.5, color: value ? "#c9c4bb" : "#65605a", marginTop: 2, overflowWrap: "anywhere" }}>{value || "—"}</div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
