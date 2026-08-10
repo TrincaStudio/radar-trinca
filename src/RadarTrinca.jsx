@@ -905,7 +905,11 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
 
         <div style={{ padding: "18px 20px 40px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-            <span style={{ color: "#8f8a80", fontSize: 11.5 }}>Revise qualquer uma das três abas antes de concluir.</span>
+            <span style={{ color: "#8f8a80", fontSize: 11.5 }}>
+              {company.statusComercial === "Revisada"
+                ? "Alterações salvas aqui também serão sincronizadas nos campos Radar do GHL."
+                : "Revise as três abas. Ao aprovar, o contato será marcado como revisado no GHL."}
+            </span>
             <button
               onClick={async () => {
                 setError("");
@@ -917,7 +921,11 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
               disabled={reviewSaving}
               style={{ background: "#8A38F5", color: "white", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, cursor: reviewSaving ? "default" : "pointer", opacity: reviewSaving ? .65 : 1, whiteSpace: "nowrap" }}
             >
-              {reviewSaving ? "Salvando…" : company.statusComercial === "Revisada" ? "Salvar revisão" : "Salvar e marcar como revisada"}
+              {reviewSaving
+                ? "Sincronizando…"
+                : company.statusComercial === "Revisada"
+                  ? "Salvar alterações no GHL"
+                  : "Aprovar e sincronizar no GHL"}
             </button>
           </div>
           {error && (
