@@ -19,6 +19,11 @@ Para conectar a interface à API interna do Scaneia, configure no servidor/Netli
 
 - `SCANEIA_INTERNAL_API_URL`: URL base do backend do Scaneia.
 - `SCANEIA_INTERNAL_API_TOKEN`: credencial server-to-server exclusiva do Radar.
+- `GHL_PRIVATE_TOKEN`: Private Integration Token com escopo `contacts.readonly`, usado somente pelas Functions.
+- `GHL_LOCATION_ID`: subconta do GHL consultada pelo Radar.
+- `GHL_CUSTOM_FIELD_URL_DO_SITE`: ID do custom field de URL para orientar a geração manual do Full.
+
+Os contatos do GHL são consultados em modo somente leitura e combinados com as análises por `ghlContactId` ou e-mail normalizado. Contatos sem análise aparecem como `Sem Full`; o Radar não cria contatos, relatórios, oportunidades ou mensagens.
 
 O navegador chama somente o proxy `/api/radar/analyses`. O token interno nunca deve ser exposto como variável `VITE_*`.
 
