@@ -501,9 +501,6 @@ export default function RadarTrinca() {
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 17, lineHeight: 1.1 }}>Radar Trinca</div>
-                <div className="mono" style={{ fontSize: 11, color: "#8f8a80", letterSpacing: 0.3 }}>
-                  SEGMENTO: SAÚDE
-                </div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -610,7 +607,7 @@ export default function RadarTrinca() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {filtered.map((c) => (
+            {filtered.map((c, index) => (
               <button
                 key={c.id}
                 onClick={() => openCompany(c.id)}
@@ -631,7 +628,7 @@ export default function RadarTrinca() {
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#302d28")}
               >
                 <span className="mono" style={{ fontSize: 11, color: "#65605a", width: 62, flexShrink: 0 }}>
-                  {c.id}
+                  {index + 1}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -692,8 +689,7 @@ function GhlOnlyDrawer({ company, onClose }) {
       <aside className="radar-scroll" style={{ position: "relative", width: "min(560px,100%)", height: "100%", overflowY: "auto", background: "#1E1D1B", borderLeft: "1px solid #302d28", padding: 20 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <div className="mono" style={{ fontSize: 11, color: "#65605a" }}>GHL · {company.ghlContactId}</div>
-            <h2 style={{ margin: "4px 0 0", fontSize: 21 }}>{company.nome}</h2>
+            <h2 style={{ margin: 0, fontSize: 21 }}>{company.nome}</h2>
             <div style={{ marginTop: 8 }}><StatusBadge status="Sem Full" /></div>
           </div>
           <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: 0, color: "#8f8a80", cursor: "pointer" }}><X size={20} /></button>
