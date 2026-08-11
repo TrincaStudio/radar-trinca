@@ -11,6 +11,7 @@ import {
   Radar,
   Linkedin,
   Mail,
+  MessageCircle,
   Upload,
   FileText,
 } from "lucide-react";
@@ -25,6 +26,36 @@ const STATUS_STYLES = {
   Revisada: { color: "#4ade80", bg: "rgba(34,197,94,.12)" },
   "Erro no processamento": { color: "#ff6ba0", bg: "rgba(255,63,133,.12)" },
 };
+
+function whatsappUrl(phone) {
+  const raw = String(phone || "").trim();
+  let digits = raw.replace(/\D/g, "");
+  const hasCountryCode = raw.startsWith("+") || digits.startsWith("00");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (!hasCountryCode && (digits.length === 11 || digits.length === 12) && digits.startsWith("0")) {
+    digits = `55${digits.slice(1)}`;
+  } else if (!hasCountryCode && (digits.length === 10 || digits.length === 11)) {
+    digits = `55${digits}`;
+  }
+  return digits.length >= 10 ? `https://wa.me/${digits}` : "";
+}
+
+function WhatsAppLink({ phone }) {
+  const href = whatsappUrl(phone);
+  if (!phone) return <span style={{ color: "#65605a" }}>—</span>;
+  if (!href) return <span>{phone}</span>;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Conversar com ${phone} pelo WhatsApp`}
+      style={{ color: "#4ade80", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}
+    >
+      <MessageCircle size={14} /> {phone}
+    </a>
+  );
+}
 
 const BLANK_ANALYSIS_FIELDS = {
   estagio: "Pré-mapeada",
@@ -717,7 +748,9 @@ function GhlOnlyDrawer({ company, onClose }) {
           ].map(([label, value]) => (
             <div key={label} style={{ borderBottom: "1px solid #302d28", paddingBottom: 10 }}>
               <div style={{ color: "#65605a", fontSize: 10.5 }}>{label}</div>
-              <div style={{ marginTop: 3, color: value ? "#d4d0c9" : "#65605a", fontSize: 13, overflowWrap: "anywhere" }}>{value || "—"}</div>
+              <div style={{ marginTop: 3, color: value ? "#d4d0c9" : "#65605a", fontSize: 13, overflowWrap: "anywhere" }}>
+                {label === "Telefone" ? <WhatsAppLink phone={value} /> : (value || "—")}
+              </div>
             </div>
           ))}
         </div>
@@ -982,6 +1015,11 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
               >
                 {company.website?.replace(/^https?:\/\//, "").replace(/\/$/, "")} <ExternalLink size={11} />
               </a>
+              {company.telefone && (
+                <div style={{ marginTop: 6, fontSize: 12 }}>
+                  <WhatsAppLink phone={company.telefone} />
+                </div>
+              )}
             </div>
             <button onClick={onClose} style={{ background: "none", border: "none", color: "#8f8a80", cursor: "pointer", padding: 4 }}>
               <X size={20} />
