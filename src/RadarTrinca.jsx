@@ -57,6 +57,33 @@ function WhatsAppLink({ phone }) {
   );
 }
 
+function formatAnalysisDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime()) || date.getTime() <= 0) return "—";
+  return date.toLocaleDateString("pt-BR");
+}
+
+function firstMeaningfulLine(...values) {
+  for (const value of values) {
+    const line = String(value || "").split(/\r?\n/).map((item) => item.trim()).find(Boolean);
+    if (line) return line;
+  }
+  return "—";
+}
+
+function inferAssetType(item) {
+  if (item.tipoAtivo) return item.tipoAtivo;
+  const text = `${item.empresa || ""} ${item.site || ""} ${item.produto || ""}`.toLowerCase();
+  if (/e-?commerce|loja|shop/.test(text)) return "E-commerce";
+  if (/landing/.test(text)) return "Landing page";
+  if (/curso|infoproduto/.test(text)) return "Curso / infoproduto";
+  if (/saas/.test(text)) return "SaaS";
+  if (/plataforma|app/.test(text)) return "Plataforma";
+  if (/portf[oó]lio/.test(text)) return "Portfólio";
+  return "Não identificado";
+}
+
 const BLANK_ANALYSIS_FIELDS = {
   estagio: "Pré-mapeada",
   statusAnalise: "Não analisada",
@@ -108,6 +135,15 @@ const BLANK_ANALYSIS_FIELDS = {
   landingPageUrl: "",
   referrerUrl: "",
   statusGhl: "Não sincronizado",
+  tipoAtivo: "Não identificado",
+  objetivoProvavel: "",
+  nivelOportunidade: "MÉDIA",
+  justificativaOportunidade: "",
+  dorDominante: "",
+  ganchoPrincipal: "",
+  hipoteseDor: "",
+  perguntasDescoberta: "",
+  possivelExpansao: "",
 };
 
 // ---------------------------------------------------------------------------
@@ -155,6 +191,7 @@ const API_STATUS_LABELS = {
 };
 
 function mapRadarAnalysis(item) {
+  const processedAt = item.processedAt || "";
   return {
     ...BLANK_ANALYSIS_FIELDS,
     id: String(item.id),
@@ -176,7 +213,7 @@ function mapRadarAnalysis(item) {
     fullReportUrl: item.fullReportUrl || "",
     ghlContactId: item.ghlContactId || "",
     statusGhl: item.ghlContactId ? "Contato vinculado" : "Não sincronizado",
-    processadoEm: item.processedAt || "",
+    processadoEm: processedAt,
     humanReviewed: Boolean(item.humanReviewed),
     reviewedAt: item.reviewedAt || null,
     reviewedBy: item.reviewedBy || "",
@@ -213,7 +250,16 @@ function mapRadarAnalysis(item) {
     sinaisProduto: Array.isArray(item.sinaisProduto) ? item.sinaisProduto.join("\n") : (item.sinaisProduto || ""),
     analiseProduto: item.analiseProduto || "",
     oportunidadesProduto: item.oportunidadesProduto || "",
-    dataAnalise: item.processedAt ? new Date(item.processedAt).toLocaleDateString("pt-BR") : "",
+    dataAnalise: formatAnalysisDate(processedAt),
+    tipoAtivo: item.tipoAtivo || inferAssetType(item),
+    objetivoProvavel: item.objetivoProvavel || item.analiseProduto || "",
+    nivelOportunidade: item.nivelOportunidade || ({ Verde: "ALTA", Amarelo: "MÉDIA", Vermelho: "BAIXA" }[item.classificacao] || "MÉDIA"),
+    justificativaOportunidade: item.justificativaOportunidade || item.fitTrinca || "",
+    dorDominante: item.dorDominante || firstMeaningfulLine(item.principaisOportunidades, item.principalEvidencia),
+    ganchoPrincipal: item.ganchoPrincipal || firstMeaningfulLine(item.principalEvidencia, item.principaisOportunidades),
+    hipoteseDor: item.hipoteseDor || item.impactoNegocio || "",
+    perguntasDescoberta: Array.isArray(item.perguntasDescoberta) ? item.perguntasDescoberta.join("\n") : (item.perguntasDescoberta || ""),
+    possivelExpansao: item.possivelExpansao || item.justificativaOferta || "",
     hasRadarAnalysis: true,
   };
 }
@@ -280,6 +326,9 @@ function fontStyles() {
       }
       .sweep { animation: sweep 3s linear infinite; transform-origin: center; }
       textarea, input, select { font-family: inherit; }
+      @media (max-width: 640px) {
+        .commercial-summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      }
     `}</style>
   );
 }
@@ -316,6 +365,15 @@ function Badge({ classificacao }) {
 function StatusBadge({ status }) {
   const style = STATUS_STYLES[status] || STATUS_STYLES["Aguardando análise"];
   return <span className="mono" style={{ display: "inline-flex", padding: "4px 8px", borderRadius: 999, fontSize: 10.5, color: style.color, background: style.bg, whiteSpace: "nowrap" }}>{status}</span>;
+}
+
+function SectionLabel({ title, source }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, margin: "18px 0 8px" }}>
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#d4d0c9" }}>{title}</div>
+      {source && <span className="mono" style={{ fontSize: 9, color: source === "Dado do Scaneia" ? "#7fd9ff" : "#c9a8fb", background: source === "Dado do Scaneia" ? "rgba(28,191,255,.1)" : "rgba(138,56,245,.1)", borderRadius: 999, padding: "3px 7px", whiteSpace: "nowrap" }}>{source}</span>}
+    </div>
+  );
 }
 
 function Field({ label, value, onChange, multiline, mono, placeholder, type = "text" }) {
@@ -447,6 +505,15 @@ export default function RadarTrinca() {
       sinaisProduto: String(company.sinaisProduto || "").split("\n").map((value) => value.trim()).filter(Boolean),
       analiseProduto: company.analiseProduto,
       oportunidadesProduto: company.oportunidadesProduto,
+      tipoAtivo: company.tipoAtivo,
+      objetivoProvavel: company.objetivoProvavel,
+      nivelOportunidade: company.nivelOportunidade,
+      justificativaOportunidade: company.justificativaOportunidade,
+      dorDominante: company.dorDominante,
+      ganchoPrincipal: company.ganchoPrincipal,
+      hipoteseDor: company.hipoteseDor,
+      perguntasDescoberta: String(company.perguntasDescoberta || "").split("\n").map((value) => value.trim()).filter(Boolean),
+      possivelExpansao: company.possivelExpansao,
       reviewedBy: company.reviewedBy || "Radar Trinca",
     };
     try {
@@ -458,7 +525,18 @@ export default function RadarTrinca() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível salvar a revisão.");
       const reviewed = mapRadarAnalysis(data);
-      setCompanies((prev) => prev.map((item) => item.id === company.id ? { ...item, ...reviewed } : item));
+      const retainedNewFields = {
+        tipoAtivo: data.tipoAtivo || company.tipoAtivo,
+        objetivoProvavel: data.objetivoProvavel || company.objetivoProvavel,
+        nivelOportunidade: data.nivelOportunidade || company.nivelOportunidade,
+        justificativaOportunidade: data.justificativaOportunidade || company.justificativaOportunidade,
+        dorDominante: data.dorDominante || company.dorDominante,
+        ganchoPrincipal: data.ganchoPrincipal || company.ganchoPrincipal,
+        hipoteseDor: data.hipoteseDor || company.hipoteseDor,
+        perguntasDescoberta: Array.isArray(data.perguntasDescoberta) ? data.perguntasDescoberta.join("\n") : (data.perguntasDescoberta || company.perguntasDescoberta),
+        possivelExpansao: data.possivelExpansao || company.possivelExpansao,
+      };
+      setCompanies((prev) => prev.map((item) => item.id === company.id ? { ...item, ...reviewed, ...retainedNewFields } : item));
       setSaveState("saved");
     } catch (e) {
       setSaveState("idle");
@@ -896,53 +974,22 @@ function CompanyDrawer({ company, onClose, onUpdate, onSaveReview }) {
     setError("");
     setProcessing(true);
     try {
-      const systemPrompt = `Você é a camada de IA do Radar Trinca, um sistema interno da Trinca Studio (parceiro digital, não agência). Sua função é ler os dados de um relatório do Scaneia sobre uma empresa e transformar isso em inteligência de negócio para decidir se vale iniciar uma conversa comercial.
+      const systemPrompt = `Você é a camada de inteligência comercial do Radar Trinca. O Scaneia diagnostica o ativo; você transforma os achados em oportunidade e abordagem comercial.
 
-O conteúdo que você vai receber pode vir em dois formatos:
-1. Um JSON estruturado extraído do relatório (campos como totalScore, scores, scoreByArea, copyGaps, designGaps, mercadoPosicao, competitors, strategicInsights, actionPlan). Nesse caso os scores vêm na escala 0–100 — converta para 0–10 dividindo por 10 (ex: totalScore 81 → notaGeral 8.1). Use scores.dev para performance, scores.copy para copy, scores.design como referência de UX, mercadoPosicao/competitors para conversão e SEO quando disponível. Se um submetric específico (ex: acessibilidade, SEO) não estiver claro nos dados, deixe null em vez de inventar.
-2. Texto livre (relatório colado manualmente). Nesse caso infira as notas qualitativamente a partir do conteúdo, ou deixe null se não for possível.
+Regras obrigatórias: não invente métricas ou fatos sobre a empresa; não assuma tráfego pago, baixa conversão ou causalidade; preserve números reais; use linguagem de hipótese quando houver inferência; não repita problemas; priorize 3 a 5 achados; traduza termos técnicos; seja específico, humano e conciso; evite linguagem genérica de consultoria e promessas.
 
-Regras de classificação:
-- Verde: há fit, oportunidade concreta e capacidade real de gerar valor.
-- Amarelo: pode haver fit, mas faltam dados ou o momento não está claro.
-- Vermelho: sem fit, fora do alcance, sem oportunidade ou sem capacidade de contratação.
+Separe responsabilidades: diagnóstico explica o que foi encontrado; oportunidade explica onde a Trinca pode atuar; abordagem explica como iniciar a conversa. A mensagem deve ser curta, específica, sem pitch imediato e preferencialmente terminar em pergunta.
 
-Regras da mensagem inicial (mensagemDM):
-- Nunca começar com "Somos uma agência" ou qualquer pitch de venda.
-- Sempre partir de uma observação real e específica sobre a empresa, no estilo "Estávamos estudando empresas do setor..." — curta (3-5 frases), tom direto, caloroso e conversacional, em português do Brasil, registro "a gente".
-- A Trinca se posiciona como parceira de produto que entende antes de agir, não como executora pontual.
-
-Análise de produto (maturidadeProduto, sinaisProduto, analiseProduto, oportunidadesProduto):
-- A Trinca quer se posicionar como parceira de PRODUTO, não de growth ou CRO. O Scaneia analisa só a landing page, mas você deve extrair dali sinais sobre o produto por trás dela — não apenas sobre conversão ou tráfego.
-- Pense em: complexidade da oferta, clareza da arquitetura de informação, indícios de maturidade tecnológica ou dívida técnica (score de tecnologia, TTFB, erros de console, cabeçalhos de segurança), como a comunicação reflete (ou não) a estrutura real do produto.
-- Sempre que houver números disponíveis no JSON (scores, criticalCount, métricas de performance), cite-os explicitamente no texto para dar concretude — ex: "score de tecnologia 8.3/10, mas TTFB de 2260ms sugere fricção técnica na entrada".
-- "sinaisProduto" deve ser uma lista de 3 a 5 sinais curtos e específicos (não genéricos), cada um citando um dado concreto quando possível.
-- "oportunidadesProduto" deve apontar oportunidades de produto que a Trinca resolveria — distintas de oportunidades de growth/CRO que já aparecem em "principaisOportunidades".
-
-Seja conciso em todos os campos de texto (2-3 frases cada, exceto mensagemDM que pode ter até 5) — a resposta tem um limite de tokens e precisa caber inteira.
-
-Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou depois, com exatamente estas chaves (todas string, exceto as notas e "sinaisProduto" que têm tipos indicados; use null quando não for possível inferir):
+Responda APENAS com JSON válido usando estas chaves:
 {
-  "notaGeral": number|null,
-  "clareza": number|null,
-  "ux": number|null,
-  "copy": number|null,
-  "conversao": number|null,
-  "performance": number|null,
-  "seo": number|null,
-  "acessibilidade": number|null,
-  "pontosFortes": string,
-  "principaisOportunidades": string,
-  "resumoExecutivo": string,
-  "impactoNegocio": string,
-  "fitTrinca": string,
+  "notaGeral": number|null, "clareza": number|null, "ux": number|null, "copy": number|null, "conversao": number|null, "performance": number|null, "seo": number|null, "acessibilidade": number|null,
   "classificacao": "Verde"|"Amarelo"|"Vermelho",
-  "sugestaoAbordagem": string,
-  "mensagemDM": string,
-  "maturidadeProduto": string,
-  "sinaisProduto": string[],
-  "analiseProduto": string,
-  "oportunidadesProduto": string
+  "resumoExecutivo": string, "principalEvidencia": string, "pontosFortes": string, "impactoNegocio": string,
+  "tipoAtivo": "Página de vendas"|"Landing page"|"Site institucional"|"E-commerce"|"SaaS"|"Plataforma"|"Curso / infoproduto"|"Página de serviço"|"Portfólio"|"Outro"|"Não identificado",
+  "objetivoProvavel": string, "nivelOportunidade": "BAIXA"|"MÉDIA"|"ALTA", "justificativaOportunidade": string,
+  "principaisOportunidades": string, "oportunidadesProduto": string, "ofertaRecomendada": string, "possivelExpansao": string,
+  "dorDominante": string, "ganchoPrincipal": string, "hipoteseDor": string, "perguntasDescoberta": string[],
+  "sugestaoAbordagem": string, "mensagemDM": string, "proximoPasso": string, "alertasComerciais": string[]
 }`;
 
       const response = await fetch("/api/analyze", {
@@ -972,9 +1019,15 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
       if (Array.isArray(parsed.sinaisProduto)) {
         parsed.sinaisProduto = parsed.sinaisProduto.join("\n");
       }
+      if (Array.isArray(parsed.perguntasDescoberta)) parsed.perguntasDescoberta = parsed.perguntasDescoberta.join("\n");
+      if (Array.isArray(parsed.alertasComerciais)) parsed.alertasComerciais = parsed.alertasComerciais.join("\n");
 
       onUpdate({
         ...parsed,
+        maturidadeProduto: parsed.tipoAtivo || "Não identificado",
+        analiseProduto: parsed.objetivoProvavel || "",
+        fitTrinca: parsed.justificativaOportunidade || "",
+        justificativaOferta: parsed.possivelExpansao || "",
         statusAnalise: "Analisada",
         dataAnalise: new Date().toLocaleDateString("pt-BR"),
       });
@@ -1028,13 +1081,13 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
           <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <Badge classificacao={company.classificacao} />
             <span style={{ fontSize: 12, color: "#8f8a80" }}>{company.statusAnalise}</span>
-            <span style={{ fontSize: 12, color: "#8f8a80" }}>· Prioridade {company.prioridade}</span>
+            <span style={{ fontSize: 12, color: "#8f8a80" }}>· Oportunidade {company.nivelOportunidade || "—"}</span>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 14 }}>
             {[
-              ["analise", "Análise"],
-              ["produto", "Produto"],
-              ["comercial", "Inteligência comercial"],
+              ["analise", "Diagnóstico"],
+              ["produto", "Oportunidade"],
+              ["comercial", "Abordagem"],
             ].map(([key, label]) => (
               <button
                 key={key}
@@ -1086,15 +1139,29 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
               <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
             </div>
           )}
+          <div className="commercial-summary" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: 7, marginBottom: 18 }}>
+            {[
+              ["Prioridade", company.nivelOportunidade || "—"],
+              ["Ativo", company.tipoAtivo || "Não identificado"],
+              ["Dor dominante", firstMeaningfulLine(company.dorDominante, company.principaisOportunidades)],
+              ["Melhor gancho", firstMeaningfulLine(company.ganchoPrincipal, company.principalEvidencia)],
+              ["Entrada Trinca", company.ofertaRecomendada || "—"],
+            ].map(([label, value]) => (
+              <div key={label} style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: "8px 9px", minWidth: 0 }}>
+                <div style={{ fontSize: 9.5, color: "#65605a", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 11.5, color: "#d4d0c9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={value}>{value}</div>
+              </div>
+            ))}
+          </div>
           {tab === "analise" && (
             <>
               <div style={{ background: "rgba(28,191,255,.08)", border: "1px solid rgba(28,191,255,.22)", borderRadius: 10, padding: 12, marginBottom: 20, color: "#9edfff", fontSize: 12.5 }}>
-                Preenchido automaticamente a partir do relatório Full do Scaneia. Os textos podem ser revisados; os scores permanecem vinculados ao relatório original.
+                O Scaneia fornece os dados e scores. Os textos abaixo são uma interpretação comercial editável do diagnóstico.
               </div>
 
               {/* Classification override */}
               <label style={{ display: "block", marginBottom: 14 }}>
-                <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Classificação</div>
+                <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Classificação do lead</div>
                 <select
                   value={company.classificacao}
                   onChange={(e) => onUpdate({ classificacao: e.target.value })}
@@ -1116,7 +1183,7 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
                 </select>
               </label>
 
-              {/* Scores grid */}
+              <SectionLabel title="Visão geral" source="Dado do Scaneia" />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginBottom: 16 }}>
                 {SCORE_FIELDS.map(([key, label]) => (
                   <label key={key} style={{ display: "block" }}>
@@ -1143,66 +1210,44 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
                   </label>
                 ))}
               </div>
-
-              <Field label="Resumo executivo" multiline={3} value={company.resumoExecutivo} onChange={(v) => onUpdate({ resumoExecutivo: v })} />
-              <Field label="Pontos fortes" multiline={2} value={company.pontosFortes} onChange={(v) => onUpdate({ pontosFortes: v })} />
-              <Field label="Principais oportunidades" multiline={3} value={company.principaisOportunidades} onChange={(v) => onUpdate({ principaisOportunidades: v })} />
-              <Field label="Impacto para o negócio" multiline={2} value={company.impactoNegocio} onChange={(v) => onUpdate({ impactoNegocio: v })} />
-              <Field label="Fit Trinca" multiline={2} value={company.fitTrinca} onChange={(v) => onUpdate({ fitTrinca: v })} />
-              <Field label="Sugestão de abordagem" multiline={2} value={company.sugestaoAbordagem} onChange={(v) => onUpdate({ sugestaoAbordagem: v })} />
-              <Field label="Primeira versão da DM" multiline={4} value={company.mensagemDM} onChange={(v) => onUpdate({ mensagemDM: v })} />
-              {company.dataAnalise && (
-                <div style={{ fontSize: 11, color: "#65605a", marginTop: 4 }}>Última análise: {company.dataAnalise}</div>
-              )}
+              <SectionLabel title="Diagnóstico principal" source="Interpretação comercial" />
+              <Field label="Síntese conectada dos achados" multiline={4} value={company.resumoExecutivo} onChange={(v) => onUpdate({ resumoExecutivo: v })} />
+              <SectionLabel title="Evidências principais" source="Dado do Scaneia" />
+              <Field label="Até 5 evidências relevantes, preservando métricas reais" multiline={5} value={company.principalEvidencia || company.principaisOportunidades} onChange={(v) => onUpdate({ principalEvidencia: v })} />
+              <SectionLabel title="O que já funciona" source="Interpretação comercial" />
+              <Field label="Pontos positivos" multiline={3} value={company.pontosFortes} onChange={(v) => onUpdate({ pontosFortes: v })} />
+              <SectionLabel title="Impacto provável" source="Hipótese comercial" />
+              <Field label="Consequência potencial, sem afirmar causalidade" multiline={3} value={company.impactoNegocio} onChange={(v) => onUpdate({ impactoNegocio: v, hipoteseDor: v })} />
+              <div style={{ fontSize: 11, color: "#65605a", marginTop: 4 }}>Última análise: {formatAnalysisDate(company.processadoEm)}</div>
             </>
           )}
 
           {tab === "produto" && (
             <>
-              <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 8 }}>
-                Números extraídos direto do relatório do Scaneia (não passam pela IA)
+              <div style={{ background: "rgba(138,56,245,.08)", border: "1px solid rgba(138,56,245,.22)", borderRadius: 10, padding: 12, marginBottom: 18, color: "#d8c1ff", fontSize: 12.5 }}>
+                Esta aba traduz o diagnóstico em uma possível atuação da Trinca. As conclusões são hipóteses e devem ser validadas na conversa.
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 8, marginBottom: 20 }}>
-                {[
-                  ["scoreProdutoDesign", "Score design", "/10"],
-                  ["scoreProdutoTecnologia", "Score tecnologia", "/10"],
-                  ["criticalCount", "Problemas críticos", ""],
-                  ["confiancaScaneia", "Confiança da análise", "%"],
-                ].map(([key, label, suffix]) => (
-                  <label key={key} style={{ display: "block" }}>
-                    <div style={{ fontSize: 10, color: "#8f8a80", marginBottom: 4 }}>{label}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <input
-                        type="number"
-                        value={company[key] ?? ""}
-                        readOnly
-                        className="mono"
-                        style={{
-                          width: "100%",
-                          background: "#211f1c",
-                          border: "1px solid #38352f",
-                          borderRadius: 7,
-                          padding: "6px 8px",
-                          color: "#ece8e1",
-                          fontSize: 13,
-                          outline: "none",
-                        }}
-                      />
-                      {suffix && <span style={{ fontSize: 11, color: "#65605a" }}>{suffix}</span>}
-                    </div>
-                  </label>
-                ))}
-              </div>
-
-              <Field label="Maturidade de produto percebida" value={company.maturidadeProduto} onChange={(v) => onUpdate({ maturidadeProduto: v })} />
-              <Field label="Sinais de produto (um por linha)" multiline={4} value={company.sinaisProduto} onChange={(v) => onUpdate({ sinaisProduto: v })} />
-              <Field label="Análise de produto" multiline={4} value={company.analiseProduto} onChange={(v) => onUpdate({ analiseProduto: v })} />
-              <Field
-                label="Oportunidades de produto (o que a Trinca resolveria)"
-                multiline={3}
-                value={company.oportunidadesProduto}
-                onChange={(v) => onUpdate({ oportunidadesProduto: v })}
-              />
+              <SectionLabel title="Contexto do ativo" source="Interpretação comercial" />
+              <label style={{ display: "block", marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Tipo de ativo</div>
+                <select value={company.tipoAtivo} onChange={(e) => onUpdate({ tipoAtivo: e.target.value, maturidadeProduto: e.target.value })} style={{ width: "100%", background: "#211f1c", border: "1px solid #38352f", borderRadius: 8, padding: "8px 10px", color: "#ece8e1", fontSize: 13.5 }}>
+                  {["Não identificado", "Página de vendas", "Landing page", "Site institucional", "E-commerce", "SaaS", "Plataforma", "Curso / infoproduto", "Página de serviço", "Portfólio", "Outro"].map((value) => <option key={value}>{value}</option>)}
+                </select>
+              </label>
+              <Field label="Objetivo provável do ativo · sinalizar quando for hipótese" multiline={3} value={company.objetivoProvavel} onChange={(v) => onUpdate({ objetivoProvavel: v, analiseProduto: v })} />
+              <SectionLabel title="Nível da oportunidade" source="Interpretação comercial" />
+              <label style={{ display: "block", marginBottom: 12 }}>
+                <select value={company.nivelOportunidade} onChange={(e) => onUpdate({ nivelOportunidade: e.target.value })} style={{ width: "100%", background: "#211f1c", border: "1px solid #38352f", borderRadius: 8, padding: "8px 10px", color: "#ece8e1", fontSize: 13.5 }}>
+                  {["BAIXA", "MÉDIA", "ALTA"].map((value) => <option key={value}>{value}</option>)}
+                </select>
+              </label>
+              <Field label="Justificativa curta" multiline={3} value={company.justificativaOportunidade} onChange={(v) => onUpdate({ justificativaOportunidade: v, fitTrinca: v })} />
+              <SectionLabel title="Principais bloqueios percebidos" source="Hipóteses comerciais" />
+              <Field label="Máximo de 4, sem repetição" multiline={5} value={company.principaisOportunidades} onChange={(v) => onUpdate({ principaisOportunidades: v, dorDominante: firstMeaningfulLine(v) })} />
+              <SectionLabel title="Onde a Trinca pode atuar" source="Interpretação comercial" />
+              <Field label="Achado → capacidade coerente da Trinca" multiline={4} value={company.oportunidadesProduto} onChange={(v) => onUpdate({ oportunidadesProduto: v })} />
+              <Field label="Entrada recomendada · concreta" multiline={3} value={company.ofertaRecomendada} onChange={(v) => onUpdate({ ofertaRecomendada: v })} />
+              <Field label="Possível expansão · sem upsell agressivo" multiline={3} value={company.possivelExpansao} onChange={(v) => onUpdate({ possivelExpansao: v, justificativaOferta: v })} />
             </>
           )}
 
@@ -1240,16 +1285,25 @@ Responda APENAS com um objeto JSON válido, sem markdown, sem texto antes ou dep
                 </div>
               </div>
 
+              <SectionLabel title="Gancho principal" source="Interpretação comercial" />
+              <Field label="Um único problema para abrir a conversa" multiline={2} value={company.ganchoPrincipal} onChange={(v) => onUpdate({ ganchoPrincipal: v })} />
+              <SectionLabel title="Principal evidência" source="Dado do Scaneia" />
+              <Field label="Dado concreto que sustenta o gancho" multiline={3} value={company.principalEvidencia} onChange={(v) => onUpdate({ principalEvidencia: v })} />
+              <SectionLabel title="Hipótese de dor" source="Hipótese comercial" />
+              <Field label="Possível consequência no negócio, sem tratar como certeza" multiline={3} value={company.hipoteseDor} onChange={(v) => onUpdate({ hipoteseDor: v, impactoNegocio: v })} />
+              <SectionLabel title="Perguntas de descoberta" source="Interpretação comercial" />
+              <Field label="2 a 4 perguntas, uma por linha" multiline={5} value={company.perguntasDescoberta} onChange={(v) => onUpdate({ perguntasDescoberta: v })} />
+              <SectionLabel title="Estratégia de abordagem" source="Interpretação comercial" />
+              <Field label="Evidência → pergunta → validação da dor → oferta" multiline={4} value={company.sugestaoAbordagem} onChange={(v) => onUpdate({ sugestaoAbordagem: v })} />
+              <Field label="Mensagem sugerida · exige revisão humana" multiline={6} value={company.mensagemDM} onChange={(v) => onUpdate({ mensagemDM: v })} />
+              <Field label="Próximo passo comercial" multiline={2} value={company.proximoPasso} onChange={(v) => onUpdate({ proximoPasso: v })} />
+              <Field label="Alertas e cuidados de linguagem" multiline={3} value={company.alertasComerciais} onChange={(v) => onUpdate({ alertasComerciais: v })} />
+
+              <SectionLabel title="Contato" />
               <Field label="Responsável / decisor" value={company.responsavel} onChange={(v) => onUpdate({ responsavel: v })} />
               <Field label="Cargo" value={company.cargo} onChange={(v) => onUpdate({ cargo: v })} />
               <Field label="LinkedIn" value={company.linkedin} onChange={(v) => onUpdate({ linkedin: v })} />
               <Field label="E-mail" value={company.email} onChange={(v) => onUpdate({ email: v })} />
-              <Field label="Principal evidência" multiline={4} value={company.principalEvidencia} onChange={(v) => onUpdate({ principalEvidencia: v })} />
-              <Field label="Oferta recomendada" value={company.ofertaRecomendada} onChange={(v) => onUpdate({ ofertaRecomendada: v })} />
-              <Field label="Justificativa da oferta" multiline={4} value={company.justificativaOferta} onChange={(v) => onUpdate({ justificativaOferta: v })} />
-              <Field label="Mensagem sugerida · exige revisão humana" multiline={6} value={company.mensagemDM} onChange={(v) => onUpdate({ mensagemDM: v })} />
-              <Field label="Próximo passo" value={company.proximoPasso} onChange={(v) => onUpdate({ proximoPasso: v })} />
-              <Field label="Alertas e cuidados de linguagem" multiline={3} value={company.alertasComerciais} onChange={(v) => onUpdate({ alertasComerciais: v })} />
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginTop: 14 }}>
                 <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: 10 }}><div style={{ fontSize: 10, color: "#65605a" }}>Confiança da análise</div><div className="mono" style={{ marginTop: 4 }}>{company.confiancaRadar == null ? "—" : `${company.confiancaRadar}%`}</div></div>
