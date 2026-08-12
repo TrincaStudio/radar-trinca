@@ -327,7 +327,7 @@ function fontStyles() {
       .sweep { animation: sweep 3s linear infinite; transform-origin: center; }
       textarea, input, select { font-family: inherit; }
       @media (max-width: 640px) {
-        .commercial-summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .commercial-summary { grid-template-columns: 1fr !important; }
       }
     `}</style>
   );
@@ -974,11 +974,18 @@ function CompanyDrawer({ company, onClose, onUpdate, onSaveReview }) {
     setError("");
     setProcessing(true);
     try {
-      const systemPrompt = `Você é a camada de inteligência comercial do Radar Trinca. O Scaneia diagnostica o ativo; você transforma os achados em oportunidade e abordagem comercial.
+      const systemPrompt = `Você é a camada de inteligência comercial do Radar Trinca. O Scaneia diagnostica o ativo; você transforma os achados em oportunidade e abordagem comercial para uma pessoa da Trinca iniciar uma conversa relevante.
 
 Regras obrigatórias: não invente métricas ou fatos sobre a empresa; não assuma tráfego pago, baixa conversão ou causalidade; preserve números reais; use linguagem de hipótese quando houver inferência; não repita problemas; priorize 3 a 5 achados; traduza termos técnicos; seja específico, humano e conciso; evite linguagem genérica de consultoria e promessas.
 
-Separe responsabilidades: diagnóstico explica o que foi encontrado; oportunidade explica onde a Trinca pode atuar; abordagem explica como iniciar a conversa. A mensagem deve ser curta, específica, sem pitch imediato e preferencialmente terminar em pergunta.
+Evite redundância entre os campos. Cada bloco tem responsabilidade exclusiva:
+- diagnóstico: sintetiza e conecta o que foi encontrado, sem recomendar serviço;
+- evidências: registra fatos ou métricas do Scaneia, sem repetir a síntese;
+- oportunidade: explica onde a Trinca pode atuar, sem escrever a mensagem comercial;
+- abordagem: transforma apenas o melhor gancho em conversa, sem recapitular todo o relatório.
+Não copie a mesma frase ou o mesmo parágrafo em campos diferentes. A principalEvidencia pode sustentar o ganchoPrincipal, mas deve ser apresentada como dado curto, não como repetição textual.
+
+A mensagemDM deve ser uma mensagem pronta para envio pelo comercial da Trinca, e não uma recomendação interna ou lista de tarefas. Nunca escreva algo como "Revisar a proposta de valor" ou "Melhorar o servidor". Escreva de 2 a 4 frases: cumprimente pelo primeiro nome quando ele estiver disponível; mencione um único achado específico em linguagem natural; apresente a relevância como hipótese, sem afirmar perda de vendas; termine com uma pergunta de descoberta coerente. Não faça pitch imediato, não ofereça solução antes da pergunta, não use jargão, não mencione nota geral e não diga que é uma IA.
 
 Responda APENAS com JSON válido usando estas chaves:
 {
@@ -1139,7 +1146,7 @@ Responda APENAS com JSON válido usando estas chaves:
               <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
             </div>
           )}
-          <div className="commercial-summary" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: 7, marginBottom: 18 }}>
+          <div className="commercial-summary" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 7, marginBottom: 18 }}>
             {[
               ["Prioridade", company.nivelOportunidade || "—"],
               ["Ativo", company.tipoAtivo || "Não identificado"],
@@ -1147,9 +1154,9 @@ Responda APENAS com JSON válido usando estas chaves:
               ["Melhor gancho", firstMeaningfulLine(company.ganchoPrincipal, company.principalEvidencia)],
               ["Entrada Trinca", company.ofertaRecomendada || "—"],
             ].map(([label, value]) => (
-              <div key={label} style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: "8px 9px", minWidth: 0 }}>
+              <div key={label} style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: "9px 10px", minWidth: 0 }}>
                 <div style={{ fontSize: 9.5, color: "#65605a", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 11.5, color: "#d4d0c9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={value}>{value}</div>
+                <div style={{ fontSize: 11.5, color: "#d4d0c9", lineHeight: 1.4, whiteSpace: "normal", overflowWrap: "anywhere" }}>{value}</div>
               </div>
             ))}
           </div>
@@ -1287,15 +1294,13 @@ Responda APENAS com JSON válido usando estas chaves:
 
               <SectionLabel title="Gancho principal" source="Interpretação comercial" />
               <Field label="Um único problema para abrir a conversa" multiline={2} value={company.ganchoPrincipal} onChange={(v) => onUpdate({ ganchoPrincipal: v })} />
-              <SectionLabel title="Principal evidência" source="Dado do Scaneia" />
-              <Field label="Dado concreto que sustenta o gancho" multiline={3} value={company.principalEvidencia} onChange={(v) => onUpdate({ principalEvidencia: v })} />
               <SectionLabel title="Hipótese de dor" source="Hipótese comercial" />
               <Field label="Possível consequência no negócio, sem tratar como certeza" multiline={3} value={company.hipoteseDor} onChange={(v) => onUpdate({ hipoteseDor: v, impactoNegocio: v })} />
               <SectionLabel title="Perguntas de descoberta" source="Interpretação comercial" />
               <Field label="2 a 4 perguntas, uma por linha" multiline={5} value={company.perguntasDescoberta} onChange={(v) => onUpdate({ perguntasDescoberta: v })} />
               <SectionLabel title="Estratégia de abordagem" source="Interpretação comercial" />
               <Field label="Evidência → pergunta → validação da dor → oferta" multiline={4} value={company.sugestaoAbordagem} onChange={(v) => onUpdate({ sugestaoAbordagem: v })} />
-              <Field label="Mensagem sugerida · exige revisão humana" multiline={6} value={company.mensagemDM} onChange={(v) => onUpdate({ mensagemDM: v })} />
+              <Field label="Mensagem de abordagem sugerida · exige revisão humana" multiline={6} value={company.mensagemDM} onChange={(v) => onUpdate({ mensagemDM: v })} />
               <Field label="Próximo passo comercial" multiline={2} value={company.proximoPasso} onChange={(v) => onUpdate({ proximoPasso: v })} />
               <Field label="Alertas e cuidados de linguagem" multiline={3} value={company.alertasComerciais} onChange={(v) => onUpdate({ alertasComerciais: v })} />
 

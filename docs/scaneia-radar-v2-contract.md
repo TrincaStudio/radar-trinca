@@ -32,6 +32,14 @@ Todos devem ser opcionais para preservar registros antigos. O Radar possui fallb
 
 A geração automática deve obedecer às regras do briefing: não inventar métricas ou fatos, não assumir tráfego ou baixa conversão, separar fato de hipótese, limitar e não repetir achados, preservar números reais e evitar linguagem genérica.
 
+### Mensagem comercial e não redundância
+
+- `mensagemSugerida` deve ser uma mensagem pronta para envio, nunca uma tarefa interna no infinitivo como “Revisar”, “Melhorar” ou “Implementar”.
+- Deve ter de 2 a 4 frases: saudação pelo primeiro nome quando disponível, um único achado específico, relevância apresentada como hipótese e uma pergunta de descoberta ao final.
+- Não fazer pitch imediato, oferecer solução antes da pergunta, citar nota geral ou recapitular o relatório.
+- Diagnóstico não recomenda serviço; Oportunidade não escreve mensagem; Abordagem não recapitula todo o diagnóstico.
+- Não copiar a mesma frase ou parágrafo para campos diferentes. A evidência factual pertence ao Diagnóstico; a Abordagem deve usá-la apenas para criar um gancho natural.
+
 ## GHL
 
 A aprovação humana permanece obrigatória. Os oito campos atuais devem continuar funcionando. Campos adicionais só devem ser escritos depois de seus custom fields serem criados e seus IDs configurados; nunca alterar UTM, source, campanha, oportunidade, pipeline, tags, responsável ou dados pessoais.
