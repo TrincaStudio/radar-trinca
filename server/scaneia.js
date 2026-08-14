@@ -30,8 +30,10 @@ export async function requestScaneia(path, options = {}) {
 }
 
 export function forwardError(error) {
+  const rawMessage = error?.message || "";
+  const sensitiveDatabaseError = /could not execute statement|duplicate key|constraint|\bsql\b|customers_email_key|insert into/i.test(rawMessage);
   return {
     status: Number(error?.status) || 502,
-    body: { error: error?.message || "Não foi possível consultar o Scaneia." },
+    body: { error: sensitiveDatabaseError ? "O Scaneia não conseguiu processar esta solicitação." : (rawMessage || "Não foi possível consultar o Scaneia.") },
   };
 }
