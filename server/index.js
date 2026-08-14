@@ -78,6 +78,28 @@ app.put("/api/radar/analyses/:id/review", async (req, res) => {
   }
 });
 
+app.get("/api/radar/full-backfill", async (req, res) => {
+  try {
+    const query = new URLSearchParams(req.query).toString();
+    res.json(await requestScaneia(`/api/internal/radar/full-backfill${query ? `?${query}` : ""}`));
+  } catch (error) {
+    const forwarded = forwardError(error);
+    res.status(forwarded.status).json(forwarded.body);
+  }
+});
+
+app.post("/api/radar/full-backfill", async (req, res) => {
+  try {
+    res.json(await requestScaneia("/api/internal/radar/full-backfill", {
+      method: "POST",
+      body: JSON.stringify(req.body || {}),
+    }));
+  } catch (error) {
+    const forwarded = forwardError(error);
+    res.status(forwarded.status).json(forwarded.body);
+  }
+});
+
 app.use(express.static(path.join(root, "dist")));
 app.get("*", (_req, res) => res.sendFile(path.join(root, "dist", "index.html")));
 app.listen(port, () => console.log(`Radar Trinca disponível na porta ${port}`));
