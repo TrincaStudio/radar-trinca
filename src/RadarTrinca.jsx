@@ -81,9 +81,15 @@ function WhatsAppLink({ phone }) {
 
 function formatAnalysisDate(value) {
   if (!value) return "—";
-  const date = new Date(value);
+  const numeric = typeof value === "number" ? value : (/^\d+(\.\d+)?$/.test(String(value).trim()) ? Number(value) : null);
+  const normalizedValue = numeric != null && numeric > 0 && numeric < 1_000_000_000_000 ? numeric * 1000 : value;
+  const date = new Date(normalizedValue);
   if (!Number.isFinite(date.getTime()) || date.getTime() <= 0) return "—";
   return date.toLocaleDateString("pt-BR");
+}
+
+function backfillContactSuffix(value) {
+  return String(value || "").replace(/^\.+/, "").slice(-8);
 }
 
 function firstMeaningfulLine(...values) {
@@ -466,7 +472,9 @@ export default function RadarTrinca() {
 
         const currentBackfillItems = backfillResponse.ok ? (backfillData.items || []) : [];
         setBackfillItems(currentBackfillItems);
-        const backfillByContactId = new Map(currentBackfillItems.map((item) => [item.ghlContactId, item]));
+        const backfillByContactSuffix = new Map(currentBackfillItems
+          .map((item) => [backfillContactSuffix(item.ghlContactId), item])
+          .filter(([suffix]) => suffix));
 
         const byContactId = new Map(analyses.filter((item) => item.ghlContactId).map((item) => [item.ghlContactId, item]));
         const byEmail = new Map(analyses.filter((item) => normalizedEmail(item.email)).map((item) => [normalizedEmail(item.email), item]));
@@ -475,7 +483,7 @@ export default function RadarTrinca() {
           const analysis = byContactId.get(contact.id) || byEmail.get(normalizedEmail(contact.email));
           if (!analysis) {
             const mapped = mapGhlOnlyContact(contact);
-            const backfill = backfillByContactId.get(contact.id);
+            const backfill = backfillByContactSuffix.get(backfillContactSuffix(contact.id));
             return backfill ? {
               ...mapped,
               backfillStatus: backfill.status,
@@ -496,7 +504,22 @@ export default function RadarTrinca() {
           };
         });
         const nextCompanies = [...merged, ...analyses.filter((analysis) => !matchedAnalysisIds.has(analysis.id))];
-        setCompanies(nextCompanies);
+        setCompanies((previousCompanies) => {
+          const previousById = new Map(previousCompanies.map((company) => [company.id, company]));
+          return nextCompanies.map((nextCompany) => {
+            const previous = previousById.get(nextCompany.id);
+            if (!previous?.detailLoaded) return nextCompany;
+            return {
+              ...nextCompany,
+              ...previous,
+              statusComercial: nextCompany.statusComercial,
+              humanReviewed: nextCompany.humanReviewed,
+              backfillStatus: nextCompany.backfillStatus,
+              backfillError: nextCompany.backfillError,
+              detailLoaded: true,
+            };
+          });
+        });
         return nextCompanies;
     } catch (e) {
       setLoadError(e.message || "Não foi possível carregar as análises.");
@@ -526,7 +549,7 @@ export default function RadarTrinca() {
       const response = await fetch(`/api/radar/analyses/${encodeURIComponent(id)}`, { cache: "no-store" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível carregar os detalhes.");
-      const detail = mapRadarAnalysis(data);
+      const detail = { ...mapRadarAnalysis(data), detailLoaded: true };
       setCompanies((prev) => prev.map((company) => company.id === String(id) ? { ...company, ...detail } : company));
     } catch (e) {
       setLoadError(e.message || "Não foi possível carregar os detalhes.");
