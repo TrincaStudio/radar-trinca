@@ -653,22 +653,29 @@ export default function RadarTrinca() {
     setBackfillLoading(true);
     setBackfillError("");
     try {
-      const response = await fetch("/api/radar/full-backfill", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dryRun: false,
-          contacts: contactsWithoutFull.map((company) => ({
-            ghlContactId: company.ghlContactId,
-            name: company.nome,
-            email: company.email,
-            phone: company.telefone,
-            website: company.website,
-          })),
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Não foi possível iniciar o processamento dos Fulls.");
+      const newItems = (backfillPreview?.matchedExistingFull || 0) + (backfillPreview?.readyToQueue || 0);
+      if (newItems > 0) {
+        const response = await fetch("/api/radar/full-backfill", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dryRun: false,
+            contacts: contactsWithoutFull.map((company) => ({
+              ghlContactId: company.ghlContactId,
+              name: company.nome,
+              email: company.email,
+              phone: company.telefone,
+              website: company.website,
+            })),
+          }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Não foi possível iniciar o processamento dos Fulls.");
+      }
+
+      const processResponse = await fetch("/api/radar/full-backfill/process-ready?limit=100", { method: "POST" });
+      const processData = await processResponse.json().catch(() => ({}));
+      if (!processResponse.ok) throw new Error(processData.error || "Não foi possível retomar os Fulls enfileirados.");
       setBackfillPreview(null);
       await loadCompanies();
     } catch (error) {
@@ -1500,7 +1507,10 @@ Responda APENAS com JSON válido usando estas chaves:
 // Full backfill confirmation
 // ---------------------------------------------------------------------------
 function BackfillModal({ preview, error, loading, onClose, onConfirm }) {
-  const actionable = (preview?.matchedExistingFull || 0) + (preview?.readyToQueue || 0);
+  const actionable = (preview?.matchedExistingFull || 0) + (preview?.readyToQueue || 0) + (preview?.alreadyQueued || 0);
+  const onlyQueued = actionable > 0
+    && (preview?.matchedExistingFull || 0) === 0
+    && (preview?.readyToQueue || 0) === 0;
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div onClick={loading ? undefined : onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.68)" }} />
@@ -1528,14 +1538,16 @@ function BackfillModal({ preview, error, loading, onClose, onConfirm }) {
               ].map(([label, value]) => <Stat key={label} label={label} value={value || 0} />)}
             </div>
             <div style={{ marginTop: 16, padding: 12, borderRadius: 9, background: "rgba(201,169,110,.08)", border: "1px solid rgba(201,169,110,.22)", color: "#d9bc86", fontSize: 12.5, lineHeight: 1.5 }}>
-              A confirmação pode gerar até {preview.readyToQueue || 0} novos relatórios Full. Contatos sem URL ou com match ambíguo não serão processados.
+              {onlyQueued
+                ? `${preview.alreadyQueued || 0} contato(s) já estão na fila. Continue para retomar o processamento agora.`
+                : `A confirmação pode gerar até ${preview.readyToQueue || 0} novos relatórios Full e retomar os que já estão na fila. Contatos sem URL ou com match ambíguo não serão processados.`}
             </div>
           </>
         )}
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
           <button onClick={onClose} disabled={loading} style={{ background: "transparent", color: "#a9a39a", border: "1px solid #3a3733", borderRadius: 8, padding: "9px 13px", cursor: "pointer" }}>Cancelar</button>
-          {preview && <button onClick={onConfirm} disabled={loading || actionable === 0} style={{ display: "flex", alignItems: "center", gap: 7, background: "#8A38F5", color: "white", border: 0, borderRadius: 8, padding: "9px 13px", fontWeight: 700, cursor: actionable && !loading ? "pointer" : "default", opacity: actionable && !loading ? 1 : .55 }}>{loading && <Loader2 size={14} className="sweep" />} Confirmar processamento</button>}
+          {preview && <button onClick={onConfirm} disabled={loading || actionable === 0} style={{ display: "flex", alignItems: "center", gap: 7, background: "#8A38F5", color: "white", border: 0, borderRadius: 8, padding: "9px 13px", fontWeight: 700, cursor: actionable && !loading ? "pointer" : "default", opacity: actionable && !loading ? 1 : .55 }}>{loading && <Loader2 size={14} className="sweep" />} {onlyQueued ? "Retomar processamento" : "Confirmar processamento"}</button>}
         </div>
       </div>
     </div>
