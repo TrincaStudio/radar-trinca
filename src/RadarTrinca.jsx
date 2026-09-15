@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+﻿import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Sparkles,
   X,
@@ -15,22 +15,24 @@ import {
   RefreshCw,
   Upload,
   FileText,
+  Flame,
 } from "lucide-react";
+import FireLeadsPage from "./fire/FireLeadsPage.jsx";
 
 const COMMERCIAL_STATUSES = ["Sem Full", "Aguardando análise", "Processando", "Aguardando revisão", "Revisada", "Erro no processamento"];
 
 const STATUS_STYLES = {
-  "Sem Full": { color: "#c9a8fb", bg: "rgba(138,56,245,.14)" },
-  "Aguardando análise": { color: "#a1a1aa", bg: "rgba(161,161,170,.12)" },
-  Processando: { color: "#7fd9ff", bg: "rgba(28,191,255,.12)" },
-  "Aguardando revisão": { color: "#d9bc86", bg: "rgba(201,169,110,.14)" },
+  "Sem Full": { color: "#6f35c8", bg: "rgba(138,56,245,.14)" },
+  "Aguardando análise": { color: "#6f6f78", bg: "rgba(161,161,170,.12)" },
+  Processando: { color: "#0074a6", bg: "rgba(28,191,255,.12)" },
+  "Aguardando revisão": { color: "#8a6200", bg: "rgba(201,169,110,.14)" },
   Revisada: { color: "#4ade80", bg: "rgba(34,197,94,.12)" },
   "Erro no processamento": { color: "#ff6ba0", bg: "rgba(255,63,133,.12)" },
-  "Sem URL": { color: "#d9bc86", bg: "rgba(201,169,110,.14)" },
-  "Match ambíguo": { color: "#d9bc86", bg: "rgba(201,169,110,.14)" },
-  "Full enfileirado": { color: "#7fd9ff", bg: "rgba(28,191,255,.12)" },
-  "Full em processamento": { color: "#7fd9ff", bg: "rgba(28,191,255,.12)" },
-  "Verificando Full": { color: "#7fd9ff", bg: "rgba(28,191,255,.12)" },
+  "Sem URL": { color: "#8a6200", bg: "rgba(201,169,110,.14)" },
+  "Match ambíguo": { color: "#8a6200", bg: "rgba(201,169,110,.14)" },
+  "Full enfileirado": { color: "#0074a6", bg: "rgba(28,191,255,.12)" },
+  "Full em processamento": { color: "#0074a6", bg: "rgba(28,191,255,.12)" },
+  "Verificando Full": { color: "#0074a6", bg: "rgba(28,191,255,.12)" },
   "Full concluído": { color: "#4ade80", bg: "rgba(34,197,94,.12)" },
   "Erro no Full": { color: "#ff6ba0", bg: "rgba(255,63,133,.12)" },
 };
@@ -64,7 +66,7 @@ function whatsappUrl(phone) {
 
 function WhatsAppLink({ phone }) {
   const href = whatsappUrl(phone);
-  if (!phone) return <span style={{ color: "#65605a" }}>—</span>;
+  if (!phone) return <span style={{ color: "#9a948b" }}>—</span>;
   if (!href) return <span>{phone}</span>;
   return (
     <a
@@ -320,9 +322,9 @@ function mapGhlOnlyContact(contact) {
 }
 
 const CLASS_STYLES = {
-  "A validar": { dot: "#6b7280", text: "#a1a1aa", bg: "rgba(107,114,128,0.12)" },
+  "A validar": { dot: "#6b7280", text: "#6f6f78", bg: "rgba(107,114,128,0.12)" },
   Verde: { dot: "#22c55e", text: "#4ade80", bg: "rgba(34,197,94,0.12)" },
-  Amarelo: { dot: "#C9A96E", text: "#d9bc86", bg: "rgba(201,169,110,0.14)" },
+  Amarelo: { dot: "#C9A96E", text: "#8a6200", bg: "rgba(201,169,110,0.14)" },
   Vermelho: { dot: "#FF3F85", text: "#ff6ba0", bg: "rgba(255,63,133,0.12)" },
 };
 
@@ -346,7 +348,7 @@ function fontStyles() {
       .mono { font-family: 'DM Mono', ui-monospace, monospace; }
       .radar-root ::selection { background: #8A38F5; color: white; }
       .radar-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-      .radar-scroll::-webkit-scrollbar-thumb { background: #3a3733; border-radius: 4px; }
+      .radar-scroll::-webkit-scrollbar-thumb { background: #ded7cb; border-radius: 4px; }
       .radar-scroll::-webkit-scrollbar-track { background: transparent; }
       @keyframes sweep {
         0% { transform: rotate(0deg); }
@@ -398,8 +400,8 @@ function StatusBadge({ status }) {
 function SectionLabel({ title, source }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, margin: "18px 0 8px" }}>
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#d4d0c9" }}>{title}</div>
-      {source && <span className="mono" style={{ fontSize: 9, color: source === "Dado do Scaneia" ? "#7fd9ff" : "#c9a8fb", background: source === "Dado do Scaneia" ? "rgba(28,191,255,.1)" : "rgba(138,56,245,.1)", borderRadius: 999, padding: "3px 7px", whiteSpace: "nowrap" }}>{source}</span>}
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#2a2520" }}>{title}</div>
+      {source && <span className="mono" style={{ fontSize: 9, color: source === "Dado do Scaneia" ? "#0074a6" : "#6f35c8", background: source === "Dado do Scaneia" ? "rgba(28,191,255,.1)" : "rgba(138,56,245,.1)", borderRadius: 999, padding: "3px 7px", whiteSpace: "nowrap" }}>{source}</span>}
     </div>
   );
 }
@@ -411,11 +413,11 @@ function Field({ label, value, onChange, multiline, mono, placeholder, type = "t
     placeholder: placeholder || "—",
     style: {
       width: "100%",
-      background: "#211f1c",
-      border: "1px solid #38352f",
+      background: "#ffffff",
+      border: "1px solid #ded7cb",
       borderRadius: 8,
       padding: "8px 10px",
-      color: "#ece8e1",
+      color: "#171717",
       fontSize: 13.5,
       outline: "none",
       resize: "vertical",
@@ -424,11 +426,11 @@ function Field({ label, value, onChange, multiline, mono, placeholder, type = "t
   };
   return (
     <label style={{ display: "block", marginBottom: 12 }}>
-      <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5, letterSpacing: 0.2 }}>{label}</div>
+      <div style={{ fontSize: 11, color: "#6d665d", marginBottom: 5, letterSpacing: 0.2 }}>{label}</div>
       {multiline ? (
-        <textarea rows={multiline === true ? 3 : multiline} {...common} onFocus={(e) => (e.target.style.borderColor = "#8A38F5")} onBlur={(e) => (e.target.style.borderColor = "#38352f")} />
+        <textarea rows={multiline === true ? 3 : multiline} {...common} onFocus={(e) => (e.target.style.borderColor = "#8A38F5")} onBlur={(e) => (e.target.style.borderColor = "#ded7cb")} />
       ) : (
-        <input type={type} {...common} onFocus={(e) => (e.target.style.borderColor = "#8A38F5")} onBlur={(e) => (e.target.style.borderColor = "#38352f")} />
+        <input type={type} {...common} onFocus={(e) => (e.target.style.borderColor = "#8A38F5")} onBlur={(e) => (e.target.style.borderColor = "#ded7cb")} />
       )}
     </label>
   );
@@ -438,6 +440,7 @@ function Field({ label, value, onChange, multiline, mono, placeholder, type = "t
 // Main app
 // ---------------------------------------------------------------------------
 export default function RadarTrinca() {
+  const [activeApp, setActiveApp] = useState("radar");
   const [companies, setCompanies] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -726,12 +729,16 @@ export default function RadarTrinca() {
     return matchesFilter && matchesQuery;
   });
 
+  if (activeApp === "fire") {
+    return <FireLeadsPage onBack={() => setActiveApp("radar")} />;
+  }
+
   return (
-    <div className="radar-root radar-scroll" style={{ minHeight: "100vh", background: "#1E1D1B", color: "#ece8e1" }}>
+    <div className="radar-root radar-scroll" style={{ minHeight: "100vh", background: "#f6f6f2", color: "#171717" }}>
       {fontStyles()}
 
       {/* Header */}
-      <div style={{ borderBottom: "1px solid #302d28", position: "sticky", top: 0, background: "#1E1D1B", zIndex: 20 }}>
+      <div style={{ borderBottom: "1px solid #e7e2d8", position: "sticky", top: 0, background: "#f6f6f2", zIndex: 20 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -754,13 +761,19 @@ export default function RadarTrinca() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span className="mono" style={{ fontSize: 11, color: "#65605a", minWidth: 70, textAlign: "right" }}>
+              <button
+                onClick={() => setActiveApp("fire")}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "#f0ece4", color: "#b84827", border: "1px solid #ffd0c0", borderRadius: 8, padding: "8px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}
+              >
+                <Flame size={14} /> Leads FIRE
+              </button>
+              <span className="mono" style={{ fontSize: 11, color: "#9a948b", minWidth: 70, textAlign: "right" }}>
                 {saveState === "saving" ? "salvando…" : loaded ? "salvo" : ""}
               </span>
               <button
                 onClick={requestBackfillPreview}
                 disabled={!loaded || contactsWithoutFull.length === 0 || backfillLoading}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "#2c2925", color: "#d8c1ff", border: "1px solid #4a3b63", borderRadius: 8, padding: "8px 12px", fontSize: 12.5, fontWeight: 600, cursor: contactsWithoutFull.length ? "pointer" : "default", opacity: !loaded || !contactsWithoutFull.length || backfillLoading ? .55 : 1 }}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "#f0ece4", color: "#6f35c8", border: "1px solid #d8c5ff", borderRadius: 8, padding: "8px 12px", fontSize: 12.5, fontWeight: 600, cursor: contactsWithoutFull.length ? "pointer" : "default", opacity: !loaded || !contactsWithoutFull.length || backfillLoading ? .55 : 1 }}
               >
                 <RefreshCw size={14} className={backfillLoading ? "sweep" : ""} /> Processar sem Full ({contactsWithoutFull.length})
               </button>
@@ -786,7 +799,7 @@ export default function RadarTrinca() {
           </div>
 
           {/* Stats strip */}
-          <div className="mono" style={{ fontSize: 10, color: "#65605a", marginTop: 18, letterSpacing: 0.3 }}>
+          <div className="mono" style={{ fontSize: 10, color: "#9a948b", marginTop: 18, letterSpacing: 0.3 }}>
             CLASSIFICAÇÃO
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: 8, marginTop: 6 }}>
@@ -797,7 +810,7 @@ export default function RadarTrinca() {
             <Stat label="Vermelho" value={stats.vermelho} color={CLASS_STYLES.Vermelho.text} />
           </div>
 
-          <div className="mono" style={{ fontSize: 10, color: "#65605a", marginTop: 14, letterSpacing: 0.3 }}>
+          <div className="mono" style={{ fontSize: 10, color: "#9a948b", marginTop: 14, letterSpacing: 0.3 }}>
             INTELIGÊNCIA COMERCIAL
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0,1fr))", gap: 8, marginTop: 6 }}>
@@ -818,9 +831,9 @@ export default function RadarTrinca() {
                   borderRadius: 999,
                   fontSize: 11.5,
                   fontWeight: 500,
-                  border: "1px solid " + (filter === f ? "#8A38F5" : "#38352f"),
+                  border: "1px solid " + (filter === f ? "#8A38F5" : "#ded7cb"),
                   background: filter === f ? "rgba(138,56,245,0.15)" : "transparent",
-                  color: filter === f ? "#c9a8fb" : "#a1a1aa",
+                  color: filter === f ? "#6f35c8" : "#6f6f78",
                   cursor: "pointer",
                   textTransform: "uppercase",
                   letterSpacing: 0.3,
@@ -830,18 +843,18 @@ export default function RadarTrinca() {
               </button>
             ))}
             <div style={{ flex: 1, minWidth: 140, position: "relative" }}>
-              <Search size={14} color="#65605a" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
+              <Search size={14} color="#9a948b" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar empresa…"
                 style={{
                   width: "100%",
-                  background: "#211f1c",
-                  border: "1px solid #38352f",
+                  background: "#ffffff",
+                  border: "1px solid #ded7cb",
                   borderRadius: 8,
                   padding: "7px 10px 7px 32px",
-                  color: "#ece8e1",
+                  color: "#171717",
                   fontSize: 13,
                   outline: "none",
                 }}
@@ -854,12 +867,12 @@ export default function RadarTrinca() {
       {/* List */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "18px 20px 60px" }}>
         {loadError && (
-          <div style={{ marginBottom: 14, border: "1px solid rgba(255,63,133,.35)", background: "rgba(255,63,133,.1)", color: "#ff8ab4", borderRadius: 8, padding: "10px 12px", fontSize: 13 }}>
+          <div style={{ marginBottom: 14, border: "1px solid rgba(255,63,133,.35)", background: "rgba(255,63,133,.1)", color: "#c9235f", borderRadius: 8, padding: "10px 12px", fontSize: 13 }}>
             {loadError}
           </div>
         )}
         {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#65605a" }}>
+          <div style={{ textAlign: "center", padding: "60px 0", color: "#9a948b" }}>
             Nenhuma empresa encontrada com esse filtro.
           </div>
         ) : (
@@ -874,37 +887,37 @@ export default function RadarTrinca() {
                   gap: 14,
                   width: "100%",
                   textAlign: "left",
-                  background: "#242220",
-                  border: "1px solid #302d28",
+                  background: "#ffffff",
+                  border: "1px solid #e7e2d8",
                   borderRadius: 10,
                   padding: "12px 14px",
                   cursor: "pointer",
                   transition: "border-color .15s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#4a463f")}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#302d28")}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#cac2b8")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#e7e2d8")}
               >
-                <span className="mono" style={{ fontSize: 11, color: "#65605a", width: 62, flexShrink: 0 }}>
+                <span className="mono" style={{ fontSize: 11, color: "#9a948b", width: 62, flexShrink: 0 }}>
                   {index + 1}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {c.nome}
                   </div>
-                  <div style={{ fontSize: 12, color: "#8f8a80", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ fontSize: 12, color: "#6d665d", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {c.produto}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                   {c.notaGeral != null && (
-                    <span className="mono" style={{ fontSize: 12, color: "#8f8a80" }}>
+                    <span className="mono" style={{ fontSize: 12, color: "#6d665d" }}>
                       {c.notaGeral}/10
                     </span>
                   )}
-                  {c.ofertaRecomendada && <span style={{ fontSize: 11, color: "#c9a8fb", maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.ofertaRecomendada}</span>}
+                  {c.ofertaRecomendada && <span style={{ fontSize: 11, color: "#6f35c8", maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.ofertaRecomendada}</span>}
                   <StatusBadge status={c.statusComercial} />
                   <Badge classificacao={c.classificacao} />
-                  <ChevronRight size={16} color="#65605a" />
+                  <ChevronRight size={16} color="#9a948b" />
                 </div>
               </button>
             ))}
@@ -939,11 +952,11 @@ export default function RadarTrinca() {
 
 function Stat({ label, value, color }) {
   return (
-    <div style={{ background: "#242220", border: "1px solid #302d28", borderRadius: 8, padding: "8px 10px" }}>
-      <div className="mono" style={{ fontSize: 18, fontWeight: 500, color: color || "#ece8e1", lineHeight: 1.1 }}>
+    <div style={{ background: "#ffffff", border: "1px solid #e7e2d8", borderRadius: 8, padding: "8px 10px" }}>
+      <div className="mono" style={{ fontSize: 18, fontWeight: 500, color: color || "#171717", lineHeight: 1.1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 10.5, color: "#8f8a80", marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: 10.5, color: "#6d665d", marginTop: 2 }}>{label}</div>
     </div>
   );
 }
@@ -953,18 +966,18 @@ function GhlOnlyDrawer({ company, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
       <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)" }} />
-      <aside className="radar-scroll" style={{ position: "relative", width: "min(560px,100%)", height: "100%", overflowY: "auto", background: "#1E1D1B", borderLeft: "1px solid #302d28", padding: 20 }}>
+      <aside className="radar-scroll" style={{ position: "relative", width: "min(560px,100%)", height: "100%", overflowY: "auto", background: "#f6f6f2", borderLeft: "1px solid #e7e2d8", padding: 20 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 21 }}>{company.nome}</h2>
             <div style={{ marginTop: 8 }}><StatusBadge status={company.statusComercial || "Sem Full"} /></div>
           </div>
-          <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: 0, color: "#8f8a80", cursor: "pointer" }}><X size={20} /></button>
+          <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: 0, color: "#6d665d", cursor: "pointer" }}><X size={20} /></button>
         </div>
 
         <div style={{ marginTop: 24, padding: 16, borderRadius: 10, border: "1px solid rgba(138,56,245,.3)", background: "rgba(138,56,245,.08)" }}>
-          <div style={{ fontWeight: 700, color: "#d8c1ff" }}>{isBackfillActive ? "O Full deste contato está sendo preparado" : "Este contato ainda não tem Full no Radar"}</div>
-          <p style={{ margin: "8px 0 0", color: "#a9a39a", fontSize: 13.5, lineHeight: 1.55 }}>
+          <div style={{ fontWeight: 700, color: "#6f35c8" }}>{isBackfillActive ? "O Full deste contato está sendo preparado" : "Este contato ainda não tem Full no Radar"}</div>
+          <p style={{ margin: "8px 0 0", color: "#6d665d", fontSize: 13.5, lineHeight: 1.55 }}>
             {isBackfillActive
               ? "O processamento acontece no Scaneia e esta tela será atualizada automaticamente. Não é necessário gerar outro relatório manualmente."
               : company.backfillStatus === "MISSING_URL"
@@ -988,9 +1001,9 @@ function GhlOnlyDrawer({ company, onClose }) {
             ["UTM medium", company.utmMedium],
             ["UTM campaign", company.utmCampaign],
           ].map(([label, value]) => (
-            <div key={label} style={{ borderBottom: "1px solid #302d28", paddingBottom: 10 }}>
-              <div style={{ color: "#65605a", fontSize: 10.5 }}>{label}</div>
-              <div style={{ marginTop: 3, color: value ? "#d4d0c9" : "#65605a", fontSize: 13, overflowWrap: "anywhere" }}>
+            <div key={label} style={{ borderBottom: "1px solid #e7e2d8", paddingBottom: 10 }}>
+              <div style={{ color: "#9a948b", fontSize: 10.5 }}>{label}</div>
+              <div style={{ marginTop: 3, color: value ? "#2a2520" : "#9a948b", fontSize: 13, overflowWrap: "anywhere" }}>
                 {label === "Telefone" ? <WhatsAppLink phone={value} /> : (value || "—")}
               </div>
             </div>
@@ -1220,16 +1233,16 @@ Responda APENAS com JSON válido usando estas chaves:
           position: "relative",
           width: "min(560px, 100%)",
           height: "100%",
-          background: "#1E1D1B",
-          borderLeft: "1px solid #302d28",
+          background: "#f6f6f2",
+          borderLeft: "1px solid #e7e2d8",
           overflowY: "auto",
         }}
       >
         {/* Drawer header */}
-        <div style={{ position: "sticky", top: 0, background: "#1E1D1B", borderBottom: "1px solid #302d28", padding: "16px 20px", zIndex: 5 }}>
+        <div style={{ position: "sticky", top: 0, background: "#f6f6f2", borderBottom: "1px solid #e7e2d8", padding: "16px 20px", zIndex: 5 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
             <div>
-              <div className="mono" style={{ fontSize: 11, color: "#65605a" }}>{company.id}</div>
+              <div className="mono" style={{ fontSize: 11, color: "#9a948b" }}>{company.id}</div>
               <div style={{ fontWeight: 700, fontSize: 19 }}>{company.nome}</div>
               <a
                 href={company.website}
@@ -1245,14 +1258,14 @@ Responda APENAS com JSON válido usando estas chaves:
                 </div>
               )}
             </div>
-            <button onClick={onClose} style={{ background: "none", border: "none", color: "#8f8a80", cursor: "pointer", padding: 4 }}>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "#6d665d", cursor: "pointer", padding: 4 }}>
               <X size={20} />
             </button>
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <Badge classificacao={company.classificacao} />
-            <span style={{ fontSize: 12, color: "#8f8a80" }}>{company.statusAnalise}</span>
-            <span style={{ fontSize: 12, color: "#8f8a80" }}>· Oportunidade {company.nivelOportunidade || "—"}</span>
+            <span style={{ fontSize: 12, color: "#6d665d" }}>{company.statusAnalise}</span>
+            <span style={{ fontSize: 12, color: "#6d665d" }}>· Oportunidade {company.nivelOportunidade || "—"}</span>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 14 }}>
             {[
@@ -1270,8 +1283,8 @@ Responda APENAS com JSON válido usando estas chaves:
                   borderRadius: 7,
                   border: "none",
                   cursor: "pointer",
-                  background: tab === key ? "#2c2925" : "transparent",
-                  color: tab === key ? "#ece8e1" : "#8f8a80",
+                  background: tab === key ? "#f0ece4" : "transparent",
+                  color: tab === key ? "#171717" : "#6d665d",
                 }}
               >
                 {label}
@@ -1282,7 +1295,7 @@ Responda APENAS com JSON válido usando estas chaves:
 
         <div style={{ padding: "18px 20px 40px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-            <span style={{ color: "#8f8a80", fontSize: 11.5 }}>
+            <span style={{ color: "#6d665d", fontSize: 11.5 }}>
               {company.statusComercial === "Revisada"
                 ? "Alterações salvas aqui também serão sincronizadas nos campos Radar do GHL."
                 : "Revise as três abas. Ao aprovar, o contato será marcado como revisado no GHL."}
@@ -1318,31 +1331,31 @@ Responda APENAS com JSON válido usando estas chaves:
               ["Melhor gancho", firstMeaningfulLine(company.ganchoPrincipal, company.principalEvidencia)],
               ["Entrada Trinca", company.ofertaRecomendada || "—"],
             ].map(([label, value]) => (
-              <div key={label} style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: "9px 10px", minWidth: 0 }}>
-                <div style={{ fontSize: 9.5, color: "#65605a", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 11.5, color: "#d4d0c9", lineHeight: 1.4, whiteSpace: "normal", overflowWrap: "anywhere" }}>{value}</div>
+              <div key={label} style={{ background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 8, padding: "9px 10px", minWidth: 0 }}>
+                <div style={{ fontSize: 9.5, color: "#9a948b", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 11.5, color: "#2a2520", lineHeight: 1.4, whiteSpace: "normal", overflowWrap: "anywhere" }}>{value}</div>
               </div>
             ))}
           </div>
           {tab === "analise" && (
             <>
-              <div style={{ background: "rgba(28,191,255,.08)", border: "1px solid rgba(28,191,255,.22)", borderRadius: 10, padding: 12, marginBottom: 20, color: "#9edfff", fontSize: 12.5 }}>
+              <div style={{ background: "rgba(28,191,255,.08)", border: "1px solid rgba(28,191,255,.22)", borderRadius: 10, padding: 12, marginBottom: 20, color: "#0074a6", fontSize: 12.5 }}>
                 O Scaneia fornece os dados e scores. Os textos abaixo são uma interpretação comercial editável do diagnóstico.
               </div>
 
               {/* Classification override */}
               <label style={{ display: "block", marginBottom: 14 }}>
-                <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Classificação do lead</div>
+                <div style={{ fontSize: 11, color: "#6d665d", marginBottom: 5 }}>Classificação do lead</div>
                 <select
                   value={company.classificacao}
                   onChange={(e) => onUpdate({ classificacao: e.target.value })}
                   style={{
                     width: "100%",
-                    background: "#211f1c",
-                    border: "1px solid #38352f",
+                    background: "#ffffff",
+                    border: "1px solid #ded7cb",
                     borderRadius: 8,
                     padding: "8px 10px",
-                    color: "#ece8e1",
+                    color: "#171717",
                     fontSize: 13.5,
                   }}
                 >
@@ -1358,7 +1371,7 @@ Responda APENAS com JSON válido usando estas chaves:
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginBottom: 16 }}>
                 {SCORE_FIELDS.map(([key, label]) => (
                   <label key={key} style={{ display: "block" }}>
-                    <div style={{ fontSize: 10, color: "#8f8a80", marginBottom: 4 }}>{label}</div>
+                    <div style={{ fontSize: 10, color: "#6d665d", marginBottom: 4 }}>{label}</div>
                     <input
                       type="number"
                       min={0}
@@ -1369,11 +1382,11 @@ Responda APENAS com JSON válido usando estas chaves:
                       className="mono"
                       style={{
                         width: "100%",
-                        background: "#211f1c",
-                        border: "1px solid #38352f",
+                        background: "#ffffff",
+                        border: "1px solid #ded7cb",
                         borderRadius: 7,
                         padding: "6px 8px",
-                        color: "#ece8e1",
+                        color: "#171717",
                         fontSize: 13,
                         outline: "none",
                       }}
@@ -1389,26 +1402,26 @@ Responda APENAS com JSON válido usando estas chaves:
               <Field label="Pontos positivos" multiline={3} value={company.pontosFortes} onChange={(v) => onUpdate({ pontosFortes: v })} />
               <SectionLabel title="Impacto provável" source="Hipótese comercial" />
               <Field label="Consequência potencial, sem afirmar causalidade" multiline={3} value={company.impactoNegocio} onChange={(v) => onUpdate({ impactoNegocio: v, hipoteseDor: v })} />
-              <div style={{ fontSize: 11, color: "#65605a", marginTop: 4 }}>Última análise: {formatAnalysisDate(company.processadoEm)}</div>
+              <div style={{ fontSize: 11, color: "#9a948b", marginTop: 4 }}>Última análise: {formatAnalysisDate(company.processadoEm)}</div>
             </>
           )}
 
           {tab === "produto" && (
             <>
-              <div style={{ background: "rgba(138,56,245,.08)", border: "1px solid rgba(138,56,245,.22)", borderRadius: 10, padding: 12, marginBottom: 18, color: "#d8c1ff", fontSize: 12.5 }}>
+              <div style={{ background: "rgba(138,56,245,.08)", border: "1px solid rgba(138,56,245,.22)", borderRadius: 10, padding: 12, marginBottom: 18, color: "#6f35c8", fontSize: 12.5 }}>
                 Esta aba traduz o diagnóstico em uma possível atuação da Trinca. As conclusões são hipóteses e devem ser validadas na conversa.
               </div>
               <SectionLabel title="Contexto do ativo" source="Interpretação comercial" />
               <label style={{ display: "block", marginBottom: 12 }}>
-                <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Tipo de ativo</div>
-                <select value={company.tipoAtivo} onChange={(e) => onUpdate({ tipoAtivo: e.target.value, maturidadeProduto: e.target.value })} style={{ width: "100%", background: "#211f1c", border: "1px solid #38352f", borderRadius: 8, padding: "8px 10px", color: "#ece8e1", fontSize: 13.5 }}>
+                <div style={{ fontSize: 11, color: "#6d665d", marginBottom: 5 }}>Tipo de ativo</div>
+                <select value={company.tipoAtivo} onChange={(e) => onUpdate({ tipoAtivo: e.target.value, maturidadeProduto: e.target.value })} style={{ width: "100%", background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 8, padding: "8px 10px", color: "#171717", fontSize: 13.5 }}>
                   {["Não identificado", "Página de vendas", "Landing page", "Site institucional", "E-commerce", "SaaS", "Plataforma", "Curso / infoproduto", "Página de serviço", "Portfólio", "Outro"].map((value) => <option key={value}>{value}</option>)}
                 </select>
               </label>
               <Field label="Objetivo provável do ativo · sinalizar quando for hipótese" multiline={3} value={company.objetivoProvavel} onChange={(v) => onUpdate({ objetivoProvavel: v, analiseProduto: v })} />
               <SectionLabel title="Nível da oportunidade" source="Interpretação comercial" />
               <label style={{ display: "block", marginBottom: 12 }}>
-                <select value={company.nivelOportunidade} onChange={(e) => onUpdate({ nivelOportunidade: e.target.value })} style={{ width: "100%", background: "#211f1c", border: "1px solid #38352f", borderRadius: 8, padding: "8px 10px", color: "#ece8e1", fontSize: 13.5 }}>
+                <select value={company.nivelOportunidade} onChange={(e) => onUpdate({ nivelOportunidade: e.target.value })} style={{ width: "100%", background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 8, padding: "8px 10px", color: "#171717", fontSize: 13.5 }}>
                   {["BAIXA", "MÉDIA", "ALTA"].map((value) => <option key={value}>{value}</option>)}
                 </select>
               </label>
@@ -1426,13 +1439,13 @@ Responda APENAS com JSON válido usando estas chaves:
             <>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 18 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Status da análise comercial</div>
+                  <div style={{ fontSize: 11, color: "#6d665d", marginBottom: 5 }}>Status da análise comercial</div>
                   <StatusBadge status={company.statusComercial} />
                 </div>
               </div>
 
-              <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 10, padding: 14, marginBottom: 18 }}>
-                <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 10 }}>Contexto do lead · dados de aquisição somente para leitura</div>
+              <div style={{ background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 10, padding: 14, marginBottom: 18 }}>
+                <div style={{ fontSize: 11, color: "#6d665d", marginBottom: 10 }}>Contexto do lead · dados de aquisição somente para leitura</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10 }}>
                   {[
                     ["Origem", company.origemLead],
@@ -1445,11 +1458,11 @@ Responda APENAS com JSON válido usando estas chaves:
                     ["Referrer", company.referrerUrl, true],
                   ].map(([label, value, isUrl]) => (
                     <div key={label} style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 10, color: "#65605a" }}>{label}</div>
+                      <div style={{ fontSize: 10, color: "#9a948b" }}>{label}</div>
                       {value && isUrl ? (
                         <a href={value} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 2, color: "#1CBFFF", fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</a>
                       ) : (
-                        <div style={{ fontSize: 12.5, color: value ? "#c9c4bb" : "#65605a", marginTop: 2, overflowWrap: "anywhere" }}>{value || "—"}</div>
+                        <div style={{ fontSize: 12.5, color: value ? "#2a2520" : "#9a948b", marginTop: 2, overflowWrap: "anywhere" }}>{value || "—"}</div>
                       )}
                     </div>
                   ))}
@@ -1475,8 +1488,8 @@ Responda APENAS com JSON válido usando estas chaves:
               <Field label="E-mail" value={company.email} onChange={(v) => onUpdate({ email: v })} />
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginTop: 14 }}>
-                <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: 10 }}><div style={{ fontSize: 10, color: "#65605a" }}>Confiança da análise</div><div className="mono" style={{ marginTop: 4 }}>{company.confiancaRadar == null ? "—" : `${company.confiancaRadar}%`}</div></div>
-                <div style={{ background: "#242220", border: "1px solid #38352f", borderRadius: 8, padding: 10 }}><div style={{ fontSize: 10, color: "#65605a" }}>Sincronização GHL</div><div style={{ marginTop: 4, fontSize: 12.5 }}>{company.statusGhl || "Não sincronizado"}</div></div>
+                <div style={{ background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 8, padding: 10 }}><div style={{ fontSize: 10, color: "#9a948b" }}>Confiança da análise</div><div className="mono" style={{ marginTop: 4 }}>{company.confiancaRadar == null ? "—" : `${company.confiancaRadar}%`}</div></div>
+                <div style={{ background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 8, padding: 10 }}><div style={{ fontSize: 10, color: "#9a948b" }}>Sincronização GHL</div><div style={{ marginTop: 4, fontSize: 12.5 }}>{company.statusGhl || "Não sincronizado"}</div></div>
               </div>
 
               {company.fullReportUrl && <a href={company.fullReportUrl} target="_blank" rel="noreferrer" style={{ color: "#1CBFFF", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, marginTop: 14 }}><ExternalLink size={14} /> Abrir relatório Full</a>}
@@ -1514,16 +1527,16 @@ function BackfillModal({ preview, error, loading, onClose, onConfirm }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div onClick={loading ? undefined : onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.68)" }} />
-      <div style={{ position: "relative", width: "min(620px,100%)", maxHeight: "90vh", overflowY: "auto", background: "#1E1D1B", border: "1px solid #3a3733", borderRadius: 14, padding: 20 }}>
+      <div style={{ position: "relative", width: "min(620px,100%)", maxHeight: "90vh", overflowY: "auto", background: "#f6f6f2", border: "1px solid #ded7cb", borderRadius: 14, padding: 20 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 19 }}>Processar contatos sem Full</h2>
-            <p style={{ margin: "7px 0 0", color: "#8f8a80", fontSize: 12.5, lineHeight: 1.5 }}>O Scaneia tentará vincular Fulls existentes e enfileirará somente os contatos restantes que possuírem URL válida.</p>
+            <p style={{ margin: "7px 0 0", color: "#6d665d", fontSize: 12.5, lineHeight: 1.5 }}>O Scaneia tentará vincular Fulls existentes e enfileirará somente os contatos restantes que possuírem URL válida.</p>
           </div>
-          <button onClick={onClose} disabled={loading} aria-label="Fechar" style={{ background: "none", border: 0, color: "#8f8a80", cursor: "pointer" }}><X size={20} /></button>
+          <button onClick={onClose} disabled={loading} aria-label="Fechar" style={{ background: "none", border: 0, color: "#6d665d", cursor: "pointer" }}><X size={20} /></button>
         </div>
 
-        {error && <div style={{ marginTop: 16, border: "1px solid rgba(255,63,133,.35)", background: "rgba(255,63,133,.1)", color: "#ff8ab4", borderRadius: 8, padding: 10, fontSize: 12.5 }}>{error}</div>}
+        {error && <div style={{ marginTop: 16, border: "1px solid rgba(255,63,133,.35)", background: "rgba(255,63,133,.1)", color: "#c9235f", borderRadius: 8, padding: 10, fontSize: 12.5 }}>{error}</div>}
 
         {preview && (
           <>
@@ -1537,7 +1550,7 @@ function BackfillModal({ preview, error, loading, onClose, onConfirm }) {
                 ["Match ambíguo", preview.ambiguous],
               ].map(([label, value]) => <Stat key={label} label={label} value={value || 0} />)}
             </div>
-            <div style={{ marginTop: 16, padding: 12, borderRadius: 9, background: "rgba(201,169,110,.08)", border: "1px solid rgba(201,169,110,.22)", color: "#d9bc86", fontSize: 12.5, lineHeight: 1.5 }}>
+            <div style={{ marginTop: 16, padding: 12, borderRadius: 9, background: "rgba(201,169,110,.08)", border: "1px solid rgba(201,169,110,.22)", color: "#8a6200", fontSize: 12.5, lineHeight: 1.5 }}>
               {onlyQueued
                 ? `${preview.alreadyQueued || 0} contato(s) já estão na fila. Continue para retomar o processamento agora.`
                 : `A confirmação pode gerar até ${preview.readyToQueue || 0} novos relatórios Full e retomar os que já estão na fila. Contatos sem URL ou com match ambíguo não serão processados.`}
@@ -1546,7 +1559,7 @@ function BackfillModal({ preview, error, loading, onClose, onConfirm }) {
         )}
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
-          <button onClick={onClose} disabled={loading} style={{ background: "transparent", color: "#a9a39a", border: "1px solid #3a3733", borderRadius: 8, padding: "9px 13px", cursor: "pointer" }}>Cancelar</button>
+          <button onClick={onClose} disabled={loading} style={{ background: "transparent", color: "#6d665d", border: "1px solid #ded7cb", borderRadius: 8, padding: "9px 13px", cursor: "pointer" }}>Cancelar</button>
           {preview && <button onClick={onConfirm} disabled={loading || actionable === 0} style={{ display: "flex", alignItems: "center", gap: 7, background: "#8A38F5", color: "white", border: 0, borderRadius: 8, padding: "9px 13px", fontWeight: 700, cursor: actionable && !loading ? "pointer" : "default", opacity: actionable && !loading ? 1 : .55 }}>{loading && <Loader2 size={14} className="sweep" />} {onlyQueued ? "Retomar processamento" : "Confirmar processamento"}</button>}
         </div>
       </div>
@@ -1563,10 +1576,10 @@ function AddCompanyModal({ onClose, onAdd }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
-      <div style={{ position: "relative", width: "min(420px,100%)", background: "#242220", border: "1px solid #38352f", borderRadius: 12, padding: 20 }}>
+      <div style={{ position: "relative", width: "min(420px,100%)", background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 12, padding: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div style={{ fontWeight: 700, fontSize: 15 }}>Nova empresa</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8f8a80", cursor: "pointer" }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#6d665d", cursor: "pointer" }}>
             <X size={18} />
           </button>
         </div>
@@ -1574,11 +1587,11 @@ function AddCompanyModal({ onClose, onAdd }) {
         <Field label="Produto / serviço" value={form.produto} onChange={(v) => setForm({ ...form, produto: v })} />
         <Field label="Website" value={form.website} onChange={(v) => setForm({ ...form, website: v })} />
         <label style={{ display: "block", marginBottom: 12 }}>
-          <div style={{ fontSize: 11, color: "#8f8a80", marginBottom: 5 }}>Prioridade</div>
+          <div style={{ fontSize: 11, color: "#6d665d", marginBottom: 5 }}>Prioridade</div>
           <select
             value={form.prioridade}
             onChange={(e) => setForm({ ...form, prioridade: e.target.value })}
-            style={{ width: "100%", background: "#211f1c", border: "1px solid #38352f", borderRadius: 8, padding: "8px 10px", color: "#ece8e1", fontSize: 13.5 }}
+            style={{ width: "100%", background: "#ffffff", border: "1px solid #ded7cb", borderRadius: 8, padding: "8px 10px", color: "#171717", fontSize: 13.5 }}
           >
             {["Alta", "Média", "Baixa"].map((o) => (
               <option key={o} value={o}>
@@ -1593,7 +1606,7 @@ function AddCompanyModal({ onClose, onAdd }) {
           style={{
             width: "100%",
             marginTop: 4,
-            background: form.nome.trim() ? "#8A38F5" : "#3a3733",
+            background: form.nome.trim() ? "#8A38F5" : "#ded7cb",
             color: "#fff",
             border: "none",
             borderRadius: 8,
@@ -1609,3 +1622,5 @@ function AddCompanyModal({ onClose, onAdd }) {
     </div>
   );
 }
+
+
